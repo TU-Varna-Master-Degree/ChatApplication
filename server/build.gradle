@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group 'tu.varna'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile (
+        'org.hibernate:hibernate-core:5.6.1.Final',
+        'org.postgresql:postgresql:42.2.23'
+    )
+    testCompile 'junit:junit:4.12'
+}
