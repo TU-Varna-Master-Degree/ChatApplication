@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">" Chat Application "</string>
+    <string name="reg_btn_register">Регистрация</string>
+    <string name="reg_et_username">Потребителско име</string>
+    <string name="reg_et_email">Имейл адрес</string>
+    <string name="reg_et_pw">Парола</string>
+    <string name="reg_et_pw_confirm">Потвърдете паролата</string>
+    <string name="reg_tv_form_name">Регистрация</string>
+    <string name="reg_btn_exit">Изход</string>
+</resources>

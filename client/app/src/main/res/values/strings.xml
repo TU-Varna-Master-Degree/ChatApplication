@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name"> Chat Application </string>
+    <string name="reg_btn_exit">" Exit"</string>
+    <string name="reg_btn_register"> Register </string>
+    <string name="reg_et_username"> Username </string>
+    <string name="reg_et_email"> E-mail </string>
+    <string name="reg_et_pw"> Password </string>
+    <string name="reg_et_pw_confirm"> Confirm Password </string>
+    <string name="reg_tv_form_name"> Register </string>
 </resources>

@@ -5,7 +5,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 public class User {
-
+    /// Fields
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,6 +19,7 @@ public class User {
     @Column(nullable = false, length = 60)
     private String password;
 
+    /// Get-Set
     public Long getId() {
         return id;
     }
