@@ -1,51 +1,51 @@
 package domain.entities;
 
+import domain.enums.MessageType;
+
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
-public class Notification
-{
-    /// Fields
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+public class Notification extends Identity {
 
-    @Column(nullable = false)
-    private long messageType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", nullable = false)
+    private MessageType messageType;
 
-    @Column(nullable = false)
-    private byte[] content;
+    private String content;
 
-    @Column(nullable = false)
-    private LocalDate sendDate;
+    @Column(name = "send_date", nullable = false)
+    private LocalDateTime sendDate;
 
     @Column(nullable = false)
     private boolean received;
 
-    /// Get-Set
-    public long getId() {
-        return id;
+    @OneToOne(targetEntity = ChatFile.class)
+    @JoinColumn(name = "file_id", referencedColumnName = "id", nullable = false)
+    private ChatFile file;
+
+    public MessageType getMessageType() {
+        return messageType;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
     }
 
-    public byte[] getContent() {
+    public String getContent() {
         return content;
     }
 
-    public void setContent(byte[] content) {
+    public void setContent(String content) {
         this.content = content;
     }
 
-    public LocalDate getSendDate() {
+    public LocalDateTime getSendDate() {
         return sendDate;
     }
 
-    public void setSendDate(LocalDate sendDate) {
+    public void setSendDate(LocalDateTime sendDate) {
         this.sendDate = sendDate;
     }
 
@@ -57,11 +57,11 @@ public class Notification
         this.received = received;
     }
 
-    public long getMessageType() {
-    return messageType;
-}
+    public ChatFile getFile() {
+        return file;
+    }
 
-    public void setMessageType(long messageType) {
-        this.messageType = messageType;
+    public void setFile(ChatFile file) {
+        this.file = file;
     }
 }

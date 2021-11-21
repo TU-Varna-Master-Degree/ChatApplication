@@ -1,33 +1,31 @@
 package domain.entities;
 
-
 import javax.persistence.*;
 
 @Entity
 @Table(name="user_notifications")
 public class UserNotification {
-    /// Fields
+
     @EmbeddedId
-    private NotificationId id;
+    private UserNotificationId id;
 
     @OneToOne(targetEntity = User.class)
-    @JoinColumn(name="users", referencedColumnName = "id", nullable = false, insertable = false, updatable = false)
-    private User user;
+    @JoinColumn(name = "receiver_id", referencedColumnName = "id", nullable = false)
+    private User receiver;
 
-    // Get-Set
-    public User getGroup() {
-        return user;
-    }
-
-    public void setGroup(User user) {
-        this.user = user;
-    }
-
-    public NotificationId getId() {
+    public UserNotificationId getId() {
         return id;
     }
 
-    public void setId(NotificationId id) {
+    public void setId(UserNotificationId id) {
         this.id = id;
+    }
+
+    public User getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(User receiver) {
+        this.receiver = receiver;
     }
 }

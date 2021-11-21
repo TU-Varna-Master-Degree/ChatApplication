@@ -7,17 +7,16 @@ import javax.persistence.OneToOne;
 import java.io.Serializable;
 
 @Embeddable
-public class NotificationId implements Serializable {
-    /// Fields
+public class UserNotificationId implements Serializable {
+
     @ManyToOne(targetEntity = User.class)
-    @JoinColumn(name = "users", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "sender_id", referencedColumnName = "id", nullable = false)
     private User sender;
 
     @OneToOne(targetEntity = Notification.class)
-    @JoinColumn(name = "notifications", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "notification_id", referencedColumnName = "id", nullable = false)
     private Notification notification;
 
-    /// Get-Set
     public User getSender() {
         return sender;
     }
