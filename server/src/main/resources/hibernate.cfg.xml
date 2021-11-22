@@ -16,7 +16,7 @@
             postgres
         </property>
         <property name="hibernate.connection.password">
-            1234
+            1wdvgy7
         </property>
 
         <property name="hibernate.hbm2ddl.auto">
