@@ -1,13 +1,16 @@
+import sun.misc.Queue;
+
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Scanner;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TestEchoServer implements Runnable{
     private ServerSocket socket;
     private boolean isRunning;
-    private int clientId = 0;
+
+    private ArrayList<Client> clients;
 
     public TestEchoServer(int port)
     {
@@ -25,33 +28,12 @@ public class TestEchoServer implements Runnable{
         try {
             do {
                 // Accept client
-                Socket client = socket.accept();
-                clientId++;
-
-                System.out.println("Client connection started.");
+                Client client = new Client( socket.accept() );
+                clients.add( client );
 
                 // Handle client
-                int finalClientId = clientId;
-                new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            Scanner in = new Scanner(client.getInputStream());
-                            PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-
-                            String msgReceived = in.nextLine();
-
-                            System.out.printf("Client> %s\n", msgReceived);
-                            System.out.println("Server re-sent message.");
-                            out.printf("Hello, Client#%d; Your Message was: %s\n", finalClientId, msgReceived);
-
-                            client.close();
-                            // TODO
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }.start();
+                System.out.println("Client connection started.");
+                new ClientHandler(client, clients).start();
             }while (isRunning) ;
         }
         catch(IOException e) {
