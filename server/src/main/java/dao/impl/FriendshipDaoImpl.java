@@ -10,13 +10,13 @@ import java.util.List;
 
 public class FriendshipDaoImpl implements FriendshipDao {
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     public FriendshipDaoImpl(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
-    public List<FriendshipDto> getFrindships(Long userId) {
+    public List<FriendshipDto> getFriendships(Long userId) {
         Query query = entityManager.createQuery(
         "SELECT new domain.dto.FriendshipDto(f.id.receiver.username, " +
                 " f.id.sender.username, " +
@@ -27,7 +27,9 @@ public class FriendshipDaoImpl implements FriendshipDao {
                 " ORDER BY f.friendshipState DESC");
 
         query.setParameter("userId", userId);
-        query.setParameter("friendshipState", FriendshipState.REFUSED);
+        query.setParameter("friendshipState", FriendshipState.REJECTED);
+
+
         return query.getResultList();
     }
 }

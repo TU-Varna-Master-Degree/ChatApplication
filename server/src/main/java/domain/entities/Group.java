@@ -17,6 +17,13 @@ public class Group extends Identity {
     @Column(name = "creation_date", nullable = false)
     private LocalDateTime creationDate;
 
+    public Group(){};
+    public Group(LocalDateTime creationDate, String name, User creator ) {
+        this.name = name;
+        this.creator = creator;
+        this.creationDate = creationDate;
+    }
+
     public String getName() {
         return name;
     }

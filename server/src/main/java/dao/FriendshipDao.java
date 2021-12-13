@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface FriendshipDao {
 
-    public List getFrindships(Long userId);
+    public List getFriendships(Long userId);
 }
