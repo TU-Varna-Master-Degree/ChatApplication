@@ -1,13 +1,14 @@
 package domain.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class GroupsDto {
     private Long groupId;
     private String groupName;
-    private LocalDate userJoinDate;
+    private LocalDateTime userJoinDate;
 
-    public GroupsDto(Long groupId, String groupName, LocalDate userJoinDate) {
+    public GroupsDto(Long groupId, String groupName, LocalDateTime userJoinDate) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.userJoinDate = userJoinDate;
@@ -29,11 +30,11 @@ public class GroupsDto {
         this.groupName = groupName;
     }
 
-    public LocalDate getUserJoinDate() {
+    public LocalDateTime getUserJoinDate() {
         return userJoinDate;
     }
 
-    public void setUserJoinDates(LocalDate userJoinDate) {
+    public void setUserJoinDates(LocalDateTime userJoinDate) {
         this.userJoinDate = userJoinDate;
     }
 }

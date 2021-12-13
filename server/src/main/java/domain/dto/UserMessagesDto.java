@@ -4,11 +4,11 @@ import domain.enums.MessageType;
 
 public class UserMessagesDto {
     private MessageType messageType;
-    private byte[] content;
+    private String content;
     private String filePath;
     private boolean hasBeenReceived;
 
-    public UserMessagesDto(MessageType messageType, byte[] content, int fileType, String filePath, boolean hasBeenReceived) {
+    public UserMessagesDto(MessageType messageType, String content, String fileType, String filePath, boolean hasBeenReceived) {
         this.messageType = messageType;
         this.content = content;
         this.filePath = filePath;
@@ -23,11 +23,11 @@ public class UserMessagesDto {
         this.messageType = messageType;
     }
 
-    public byte[] getContent() {
+    public String getContent() {
         return content;
     }
 
-    public void setContent(byte[] content) {
+    public void setContent(String content) {
         this.content = content;
     }
 

@@ -5,11 +5,11 @@ import dao.EditMessageDao;
 import javax.persistence.EntityManager;
 
 public class EditMessageDaoImpl implements EditMessageDao {
-    private static final String QUERY_PARAM_NOTIFICATION_ID = ":notification_id";
+    private static final String QUERY_PARAM_NOTIFICATION_ID = "notification_id";
     private static final String QUERY_STRING =
             "UPDATE Notification" +
             "SET received=true" +
-            "WHERE id=" + QUERY_PARAM_NOTIFICATION_ID;
+            "WHERE id=:" + QUERY_PARAM_NOTIFICATION_ID;
 
     private final EntityManager manager;
 

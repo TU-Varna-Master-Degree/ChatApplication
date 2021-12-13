@@ -2,24 +2,25 @@ package dao.impl;
 
 import dao.LoadUserMessagesDao;
 import domain.dto.UserMessagesDto;
+import domain.entities.UserNotification;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
 public class LoadUserMessagesDaoImpl implements LoadUserMessagesDao {
-    private static final String QUERY_PARAM_FIRST_USER_ID = ":firstUserId";
-    private static final String QUERY_PARAM_SECOND_USER_ID = ":secondUserId";
+    private static final String QUERY_PARAM_FIRST_USER_ID = "firstUserId";
+    private static final String QUERY_PARAM_SECOND_USER_ID = "secondUserId";
     private static final String QUERY_STRING =
             "SELECT new domain.dto.UserMessagesDto(" +
                     "notif.id.notification.messageType, " +
                     "notif.id.notification.content, " +
                     "notif.id.notification.file.fileType, " +
                     "notif.id.notification.file.filePath, " +
-                    "notif.id.notification.received)" +
-            "FROM UserNotification AS notif" +
-            "WHERE notif.id.sender.id=" + QUERY_PARAM_FIRST_USER_ID  +
-                    "OR notif.id.sender.id=" + QUERY_PARAM_SECOND_USER_ID + " " +
-            "ORDER BY notif.id.notification.sendDate DESC";
+                    "notif.id.notification.received) " +
+            "FROM UserNotification notif "  +
+          "WHERE ((notif.id.sender.id=:" + QUERY_PARAM_FIRST_USER_ID + ") AND (notif.receiver.id=:" + QUERY_PARAM_SECOND_USER_ID + ")) OR " +
+                  "((notif.id.sender.id=:" + QUERY_PARAM_SECOND_USER_ID + ") AND (notif.receiver.id=:" +  QUERY_PARAM_FIRST_USER_ID + "))" +
+          "ORDER BY notif.id.notification.sendDate DESC";
 
     private final EntityManager entityManager;
 
@@ -28,7 +29,7 @@ public class LoadUserMessagesDaoImpl implements LoadUserMessagesDao {
     }
 
     @Override
-    public List<UserMessagesDto> getGroupMessages(Long firstUserId, Long secondUserId) {
+    public List<UserMessagesDto> getMessages(Long firstUserId, Long secondUserId) {
         return entityManager.createQuery(QUERY_STRING)
                 .setParameter(QUERY_PARAM_FIRST_USER_ID, firstUserId)
                 .setParameter(QUERY_PARAM_SECOND_USER_ID, secondUserId)

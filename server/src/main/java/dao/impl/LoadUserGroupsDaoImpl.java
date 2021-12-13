@@ -7,20 +7,21 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 public class LoadUserGroupsDaoImpl implements LoadUserGroupsDao {
-    private static final String QUERY_PARAM_USER_ID = ":userId";
+    private static final String QUERY_PARAM_USER_ID = "userId";
     private static final String SUBQUERY_DATE =
-            "SELECT notif.id.notification.sendDate " +
-            "FROM GroupNotifications AS notif " +
-            "WHERE notif.id.group.id=" + QUERY_PARAM_USER_ID;
+            "SELECT notif.id.notification.sendDate" +
+            "FROM GroupNotifications notif " +
+            "WHERE notif.id.group.id=:" + QUERY_PARAM_USER_ID;
+
+    // TODO: Fix problem with select sub-query ????
+    // Programaticall sorting
     private static final String QUERY_STRING =
-            "SELECT " +
-                    "new domain.dto.GroupsDto( " +
+            "SELECT new domain.dto.GroupsDto( " +
                         "userGroup.id.group.id, " +
                         "userGroup.id.group.name, " +
-                        "userGroup.joinDate )," +
-                    "(" + SUBQUERY_DATE + ") AS mostRecentDate" +
-            "FROM UserGroup AS userGroup " +
-            "WHERE userGroup.id.user.id=" + QUERY_PARAM_USER_ID + " " +
+                        "userGroup.joinDate ), (" +  SUBQUERY_DATE + ") as mostRecentDate " +
+            "FROM UserGroup userGroup " +
+            "WHERE userGroup.id.user.id=:" + QUERY_PARAM_USER_ID + " " +
             "GROUP BY MAX(mostRecentDate) " +
             "ORDER BY mostRecentDate DESC";
 

@@ -4,6 +4,10 @@ import dao.impl.*;
 import domain.dto.FriendsToGroupDto;
 import domain.dto.WhatGroupDto;
 import domain.enums.FriendshipState;
+import dao.impl.LoadUserGroupsDaoImpl;
+import dao.impl.LoadUserMessagesDaoImpl;
+import domain.dto.FindFriendDto;
+import domain.dto.UserMessagesDto;
 
 import java.util.List;
 
@@ -12,10 +16,7 @@ import static config.HibernateConfiguration.getEntityManager;
 public class Main {
 
     // private static final int CHAT_PORT = 1337;
-
-
     public static void main(String[] args) {
-        HibernateConfiguration.init();
 
        // WhatGroupById(2L);
         // CheckLogin("liliana223@abv.bg","TGhjM2");
@@ -24,6 +25,12 @@ public class Main {
         //SetFriendshipState(2,5,FriendshipState.ACCEPTED);
         //NewFriendshipPending(3,7);
         //AddAFriendToGroup(2,9);
+        // TestEchoServer server = new TestEchoServer(CHAT_PORT);
+        // server.run();
+        HibernateConfiguration.init();
+
+        //  loadUserGroupsTest();
+        loadUserMessagesTest();
 
         HibernateConfiguration.close();
     }
@@ -83,16 +90,39 @@ public static void NewFriendshipPending(long id1,long id2){
         addToGroupDao.AddToGroup(id1, id2Group);
     }
 
+    static void findFriendTest() {
+        try {
+            dao.FindFriendDao findFriend = new dao.impl.FindFriendDaoImpl(getEntityManager());
+
+            List<FindFriendDto> l = findFriend.findFriendByName(6L, "Azure");
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    static void loadUserMessagesTest() {
+        dao.LoadUserMessagesDao obj = new dao.impl.LoadUserMessagesDaoImpl(getEntityManager());
+        try {
+            // TODO: Fix Query, Test should return convo of user 1L and user 2L
+            List<domain.dto.UserMessagesDto> l = obj.getMessages(1L, 2L);
+            for (UserMessagesDto o : l) {
+
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+
+    }
+
+    static void loadUserGroupsTest() {
+        dao.LoadUserGroupsDao obj = new LoadUserGroupsDaoImpl(getEntityManager());
+        try {
+            List l = obj.getGroups(1L);
+
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+
 
 }
-
-
-
-
-
-
-
-
-
-
-
