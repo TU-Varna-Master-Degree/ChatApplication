@@ -1,10 +1,21 @@
 <resources>
     <string name="app_name"> Chat Application </string>
+    <string name="login_activity_name">Login</string>
     <string name="reg_btn_exit">" Exit"</string>
     <string name="reg_btn_register"> Register </string>
-    <string name="reg_et_username"> Username </string>
-    <string name="reg_et_email"> E-mail </string>
-    <string name="reg_et_pw"> Password </string>
-    <string name="reg_et_pw_confirm"> Confirm Password </string>
+    <string name="reg_tv_username"> Username </string>
+    <string name="reg_tv_email"> Email </string>
+    <string name="reg_tv_pw"> Password </string>
+    <string name="reg_tv_pw_confirm"> Confirm Password </string>
+    <string name="reg_et_username"> Your display name e.g doni12</string>
+    <string name="reg_et_email"> e.g myemail@gmail.com </string>
+    <string name="reg_et_pw"> type your password here </string>
+    <string name="reg_et_pw_confirm"> re-type password </string>
     <string name="reg_tv_form_name"> Register </string>
+    <string name="login_tv_username"> Username/Email </string>
+    <string name="login_tv_password"> Password </string>
+    <string name="login_et_username"> e.g myemail@gmail.com </string>
+    <string name="login_btn_login"> Login </string>
+    <string name="login_tv_register"> <u>Don\'t have an account? Signup</u> </string>
+    <string name="login_chb_remember"> Remember me </string>
 </resources>

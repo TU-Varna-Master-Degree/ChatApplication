@@ -4,10 +4,108 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
+
+    <Button
+        android:id="@+id/btn_reg_confirm"
+        android:layout_width="280dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="4dp"
+        android:text="@string/reg_btn_register"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reg_et_pw_confirm"
+        app:layout_constraintVertical_bias="0.118" />
+
+    <EditText
+        android:id="@+id/reg_et_email"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+
+        android:ems="10"
+        android:hint="@string/reg_et_email"
+        android:inputType="textEmailAddress"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reg_tv_email" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_reg_exit"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="12dp"
+        android:background="#A3A3A3"
+        android:clickable="true"
+        android:focusable="true"
+        app:fabCustomSize="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@android:drawable/ic_delete"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <EditText
+        android:id="@+id/reg_et_pw"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+        android:ems="10"
+        android:hint="@string/reg_et_pw"
+        android:importantForAutofill="no"
+        android:inputType="textPassword"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reg_tv_password" />
 
     <TextView
-        android:id="@+id/TV_RegForm_Name"
+        android:id="@+id/reg_tv_confirm_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/reg_tv_pw_confirm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.223"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reg_et_pw" />
+
+    <EditText
+        android:id="@+id/reg_et_username"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+        android:ems="10"
+        android:hint="@string/reg_et_username"
+        android:inputType="textPersonName"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reg_tv_username" />
+
+    <EditText
+        android:id="@+id/reg_et_pw_confirm"
+        android:layout_width="280dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+        android:ems="10"
+        android:hint="@string/reg_et_pw_confirm"
+        android:importantForAutofill="no"
+        android:inputType="textPassword"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reg_tv_confirm_password" />
+
+    <TextView
+        android:id="@+id/reg_form_name"
         android:layout_width="133dp"
         android:layout_height="49dp"
         android:text="@string/reg_tv_form_name"
@@ -17,94 +115,42 @@
         android:typeface="normal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.233"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.115" />
+        app:layout_constraintVertical_bias="0.148" />
 
-    <EditText
-        android:id="@+id/ET_RegForm_Username"
+    <TextView
+        android:id="@+id/reg_tv_password"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="128dp"
-        android:ems="10"
-        android:hint="@string/reg_et_username"
-        android:inputType="textPersonName"
-        android:minHeight="48dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/reg_tv_pw"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintHorizontal_bias="0.189"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/TV_RegForm_Name" />
+        app:layout_constraintTop_toBottomOf="@+id/reg_et_email" />
 
-    <EditText
-        android:id="@+id/ET_RegForm_PW_Confirm"
+    <TextView
+        android:id="@+id/reg_tv_username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:ems="10"
-        android:hint="@string/reg_et_pw_confirm"
-        android:importantForAutofill="no"
-        android:inputType="textPassword"
-        android:minHeight="48dp"
+        android:layout_marginTop="72dp"
+        android:text="@string/reg_tv_username"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="0.19"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ET_RegForm_PW" />
+        app:layout_constraintTop_toBottomOf="@+id/reg_form_name" />
 
-    <EditText
-        android:id="@+id/ET_RegForm_Email"
+    <TextView
+        android:id="@+id/reg_tv_email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:ems="10"
-        android:hint="@string/reg_et_email"
-        android:inputType="textEmailAddress"
-        android:minHeight="48dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/reg_tv_email"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.175"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ET_RegForm_Username" />
-
-    <EditText
-        android:id="@+id/ET_RegForm_PW"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:ems="10"
-        android:hint="@string/reg_et_pw"
-        android:importantForAutofill="no"
-        android:inputType="textPassword"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ET_RegForm_Email" />
-
-    <Button
-        android:id="@+id/btn_reg_confirm"
-        android:layout_width="414dp"
-        android:layout_height="59dp"
-        android:layout_marginBottom="4dp"
-        android:text="@string/reg_btn_register"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ET_RegForm_PW_Confirm"
-        app:layout_constraintVertical_bias="0.95" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btn_reg_exit"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="#A3A3A3"
-        android:clickable="true"
-        app:fabCustomSize="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_delete"
-        tools:ignore="SpeakableTextPresentCheck"
-        android:focusable="true" />
+        app:layout_constraintTop_toBottomOf="@+id/reg_et_username" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

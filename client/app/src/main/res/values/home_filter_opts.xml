@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="home_filter_opts">
+        <item>All</item>
+        <item>Groups</item>
+        <item>Friends</item>
+        <item>Pending Friendships</item>
+    </string-array>
+</resources>
