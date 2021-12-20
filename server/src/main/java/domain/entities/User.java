@@ -1,10 +1,11 @@
 package domain.entities;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "users")
-public class User extends Identity {
+public class User extends Identity implements Serializable {
 
     @Column(nullable = false)
     private String username;
@@ -12,7 +13,7 @@ public class User extends Identity {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false, length = 60)
+    @Column(nullable = false, length = 64)
     private String password;
 
     public String getUsername() {

@@ -1,13 +1,11 @@
 import config.HibernateConfiguration;
 import dao.*;
 import dao.impl.*;
+import domain.dto.FindFriendDto;
 import domain.dto.FriendsToGroupDto;
+import domain.dto.UserMessagesDto;
 import domain.dto.WhatGroupDto;
 import domain.enums.FriendshipState;
-import dao.impl.LoadUserGroupsDaoImpl;
-import dao.impl.LoadUserMessagesDaoImpl;
-import domain.dto.FindFriendDto;
-import domain.dto.UserMessagesDto;
 
 import java.util.List;
 
@@ -15,23 +13,11 @@ import static config.HibernateConfiguration.getEntityManager;
 
 public class Main {
 
-    // private static final int CHAT_PORT = 1337;
     public static void main(String[] args) {
-
-       // WhatGroupById(2L);
-        // CheckLogin("liliana223@abv.bg","TGhjM2");
-        // WhatFriendsCanJoinGroup(3L);
-         //CreateAGroup(8,"Many People");
-        //SetFriendshipState(2,5,FriendshipState.ACCEPTED);
-        //NewFriendshipPending(3,7);
-        //AddAFriendToGroup(2,9);
-        // TestEchoServer server = new TestEchoServer(CHAT_PORT);
-        // server.run();
         HibernateConfiguration.init();
+        DispatcherServlet.listen();
 
-        //  loadUserGroupsTest();
-        loadUserMessagesTest();
-
+        DispatcherServlet.close();
         HibernateConfiguration.close();
     }
 
@@ -41,15 +27,6 @@ public class Main {
         for (WhatGroupDto gr : whatGroups)
             System.out.println("\n име на група по ID : " + gr.getGroupName() +
                     "Date " + gr.getFoundation() + "\n");
-    }
-
-    public static void CheckLogin(String email, String pass) {
-        LoginUserDao loginUserDao = new LoginUserDaoImpl(getEntityManager());
-        boolean isCorrect = loginUserDao.Login(email,
-                pass);
-        System.out.println("\n The credentials of the user are :  " + isCorrect + "\n");
-
-
     }
 
 

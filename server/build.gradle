@@ -10,20 +10,16 @@ targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    maven {
-        url 'https://repo.clojars.org'
-        name 'Clojars'
-    }
 }
 
 dependencies {
-    implementation 'org.projectlombok:lombok:1.18.20'
-    implementation 'org.projectlombok:lombok:1.18.20'
-    implementation 'org.projectlombok:lombok:1.18.20'
-    implementation 'clojure.java-time:clojure.java-time:0.3.3'
     compile (
         'org.hibernate:hibernate-core:5.6.1.Final',
         'org.postgresql:postgresql:42.2.23'
+    )
+    implementation (
+        'org.apache.logging.log4j:log4j-core:2.17.0',
+        'commons-codec:commons-codec:1.11'
     )
     testCompile 'junit:junit:4.12'
 }
