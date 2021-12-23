@@ -1,7 +1,7 @@
 package dao.impl;
 
 import dao.WhatGroupDao;
-import domain.dto.WhatGroupDto;
+import domain.client.dto.WhatGroupDto;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -15,7 +15,7 @@ public class WhatGroupDaoImpl implements WhatGroupDao {
     }
 
     public List<WhatGroupDto> WhatGroup(long id){
-        String sel="select new domain.dto.WhatGroupDto(gr.name, gr.creationDate) " +
+        String sel="select new domain.client.dto.WhatGroupDto(gr.name, gr.creationDate) " +
                 "from Group gr Where gr.id=:id";
 
         Query query= entityManager.createQuery(sel);

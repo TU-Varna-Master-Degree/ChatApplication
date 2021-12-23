@@ -1,7 +1,7 @@
 package dao.impl;
 
 import dao.LoadGroupMessagesDao;
-import domain.dto.GroupMessagesDto;
+import domain.client.dto.GroupMessagesDto;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 public class LoadGroupMessagesDaoImpl implements LoadGroupMessagesDao {
     private static final String QUERY_PARAM_GROUP_ID = ":groupId";
     private static final String SUBQUERY_MESSAGES_STRING =
-            "SELECT new domain.dto.GroupMessagesDto.Messages(" +
+            "SELECT new domain.client.dto.GroupMessagesDto.Messages(" +
                     "notif.id.notification.messageType," +
                     "notif.id.notification.content," +
                     "notif.id.notification.sendDate," +

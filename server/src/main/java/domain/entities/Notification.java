@@ -1,6 +1,6 @@
 package domain.entities;
 
-import domain.enums.MessageType;
+import domain.client.enums.MessageType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

@@ -1,8 +1,7 @@
 package dao.impl;
 
 import dao.LoadUserMessagesDao;
-import domain.dto.UserMessagesDto;
-import domain.entities.UserNotification;
+import domain.client.dto.UserMessagesDto;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -11,7 +10,7 @@ public class LoadUserMessagesDaoImpl implements LoadUserMessagesDao {
     private static final String QUERY_PARAM_FIRST_USER_ID = "firstUserId";
     private static final String QUERY_PARAM_SECOND_USER_ID = "secondUserId";
     private static final String QUERY_STRING =
-            "SELECT new domain.dto.UserMessagesDto(" +
+            "SELECT new domain.client.dto.UserMessagesDto(" +
                     "notif.id.notification.messageType, " +
                     "notif.id.notification.content, " +
                     "notif.id.notification.file.fileType, " +

@@ -1,36 +1,43 @@
 package service.impl;
 
 import dao.UserDao;
-import dao.impl.UserDaoImpl;
-import domain.client.ServerResponse;
+import domain.client.dialogue.ServerResponse;
+import domain.client.dto.UserDto;
+import domain.client.enums.StatusCode;
 import domain.entities.User;
-import domain.enums.StatusCode;
 import org.apache.commons.codec.digest.DigestUtils;
 import service.UserService;
+import org.modelmapper.ModelMapper;
 
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
+    private final ModelMapper modelMapper;
 
-    public UserServiceImpl() {
-        userDao = new UserDaoImpl();
+    public UserServiceImpl(UserDao userDao, ModelMapper modelMapper) {
+        this.userDao = userDao;
+        this.modelMapper = modelMapper;
     }
 
-    public ServerResponse register(User user) {
-        if (userDao.checkUserEmailExist(user.getEmail())) {
+    public ServerResponse register(UserDto userDto) {
+        if (userDao.checkUserEmailExist(userDto.getEmail())) {
             return new ServerResponse(StatusCode.FAILED, "User email already exists!");
         }
 
-        user.setPassword(DigestUtils.sha256Hex(user.getPassword()));
+        User user = this.modelMapper.map(userDto, User.class);
+        user.setPassword(DigestUtils.sha256Hex(userDto.getPassword()));
         userDao.save(user);
         return new ServerResponse(StatusCode.SUCCESSFUL);
     }
 
-    public ServerResponse login(User user) {
-        String sha256Password = DigestUtils.sha256Hex(user.getPassword());
+    public ServerResponse login(UserDto userDto) {
+        String sha256Password = DigestUtils.sha256Hex(userDto.getPassword());
+        Long userId = userDao.login(userDto.getEmail(), sha256Password);
 
-        if (userDao.login(user.getEmail(), sha256Password)) {
-            return new ServerResponse(StatusCode.SUCCESSFUL);
+        if (userId != null) {
+            ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL);
+            response.setData(userId);
+            return response;
         } else {
             return new ServerResponse(StatusCode.FAILED, "Please, try again!");
         }

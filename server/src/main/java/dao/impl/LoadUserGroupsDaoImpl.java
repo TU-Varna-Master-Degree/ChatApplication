@@ -1,7 +1,7 @@
 package dao.impl;
 
 import dao.LoadUserGroupsDao;
-import domain.dto.GroupsDto;
+import domain.client.dto.GroupsDto;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -16,7 +16,7 @@ public class LoadUserGroupsDaoImpl implements LoadUserGroupsDao {
     // TODO: Fix problem with select sub-query ????
     // Programaticall sorting
     private static final String QUERY_STRING =
-            "SELECT new domain.dto.GroupsDto( " +
+            "SELECT new domain.client.dto.GroupsDto( " +
                         "userGroup.id.group.id, " +
                         "userGroup.id.group.name, " +
                         "userGroup.joinDate ), (" +  SUBQUERY_DATE + ") as mostRecentDate " +

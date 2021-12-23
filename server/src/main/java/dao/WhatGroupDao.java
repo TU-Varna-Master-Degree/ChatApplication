@@ -1,6 +1,6 @@
 package dao;
 
-import domain.dto.WhatGroupDto;
+import domain.client.dto.WhatGroupDto;
 
 import java.util.List;
 

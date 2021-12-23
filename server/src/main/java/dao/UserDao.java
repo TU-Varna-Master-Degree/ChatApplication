@@ -8,5 +8,5 @@ public interface UserDao {
 
     public void save(User user);
 
-    public boolean login(String email, String password);
+    public Long login(String email, String password);
 }

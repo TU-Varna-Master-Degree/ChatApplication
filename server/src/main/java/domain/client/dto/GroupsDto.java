@@ -1,6 +1,5 @@
-package domain.dto;
+package domain.client.dto;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class GroupsDto {

@@ -1,11 +1,11 @@
 package service;
 
-import domain.client.ServerResponse;
-import domain.entities.User;
+import domain.client.dialogue.ServerResponse;
+import domain.client.dto.UserDto;
 
 public interface UserService {
 
-    public ServerResponse register(User user);
+    public ServerResponse register(UserDto userDto);
 
-    public ServerResponse login(User user);
+    public ServerResponse login(UserDto userDto);
 }

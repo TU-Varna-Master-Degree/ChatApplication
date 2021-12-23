@@ -1,6 +1,6 @@
 package dao;
 
-import domain.dto.SendMessageDto;
+import domain.client.dto.SendMessageDto;
 
 
 public interface SendMessageDao {

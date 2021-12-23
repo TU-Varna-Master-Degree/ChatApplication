@@ -1,4 +1,4 @@
-package domain.enums;
+package domain.client.enums;
 
 public enum FriendshipState {
     ACCEPTED,

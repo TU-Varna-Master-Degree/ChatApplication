@@ -1,7 +1,6 @@
-package domain.dto;
+package domain.client.dto;
 
-import domain.enums.MessageType;
-import net.bytebuddy.asm.Advice;
+import domain.client.enums.MessageType;
 
 import java.time.LocalDate;
 import java.util.List;

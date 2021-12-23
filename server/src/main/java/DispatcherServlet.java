@@ -7,16 +7,18 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.*;
 
-import domain.client.ServerResponse;
+import domain.client.dialogue.ServerResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import service.SessionService;
+import service.impl.SessionServiceImpl;
 
 public class DispatcherServlet {
 
-    private static Map<Long, SocketChannel> channels = new HashMap<>();
     private static ServerSocketChannel serverSocket;
-    private final static HandlerMapping handlerMapping = new HandlerMapping();
     private final static Logger logger = LogManager.getLogger();
+    private static HandlerMapping handlerMapping;
+    private static SessionService sessionService;
 
     public static void listen() {
         try {
@@ -29,6 +31,9 @@ public class DispatcherServlet {
         }
 
         Selector selector = null;
+        sessionService = new SessionServiceImpl();
+        handlerMapping = new HandlerMapping(sessionService);
+
         try {
             selector = Selector.open();
             serverSocket.register(selector, SelectionKey.OP_ACCEPT);
@@ -54,7 +59,7 @@ public class DispatcherServlet {
                 }
 
                 if (key.isReadable()) {
-                    processRequest(selector, key);
+                    processRequest(key);
                 }
 
                 iter.remove();
@@ -71,9 +76,9 @@ public class DispatcherServlet {
         }
     }
 
-    private static void processRequest(Selector selector, SelectionKey key) {
+    private static void processRequest(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
-        ByteBuffer data = ByteBuffer.allocate(1024);
+        ByteBuffer data = ByteBuffer.allocate(1000 * 16);
         int read = 0;
         try {
             read = channel.read(data);
@@ -83,13 +88,14 @@ public class DispatcherServlet {
 
         if (read == -1) {
             try {
+                sessionService.destroySession(key);
                 channel.close();
                 logger.info("Client channel closed!");
             } catch (IOException e) {
                 logger.error("Unable to close channel!");
             }
         } else {
-            ServerResponse response = handlerMapping.map(selector, key, data);
+            ServerResponse response = handlerMapping.map(channel, key, data);
             sendResponse(channel, response);
         }
     }

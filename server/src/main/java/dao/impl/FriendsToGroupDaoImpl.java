@@ -1,13 +1,13 @@
 package dao.impl;
 
 import dao.FriendsToGroupDao;
-import domain.dto.FriendsToGroupDto;
+import domain.client.dto.FriendsToGroupDto;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.List;
 
-import static domain.enums.FriendshipState.ACCEPTED;
+import static domain.client.enums.FriendshipState.ACCEPTED;
 
 //връща списък с приятелите с потвърден статус ,
       // които могат да бъдат поканени в група
@@ -19,7 +19,7 @@ public class FriendsToGroupDaoImpl implements FriendsToGroupDao {
         this.entityManager = entityManager;
     }
     public List<FriendsToGroupDto> FriendsForGroup(long id){
-        String string ="SELECT new domain.dto.FriendsToGroupDto" +
+        String string ="SELECT new domain.client.dto.FriendsToGroupDto" +
                 "(friends.id.receiver.username, " +
                 " friends.id.sender.username,friends.friendshipState) " +
                 " FROM Friendship friends " +

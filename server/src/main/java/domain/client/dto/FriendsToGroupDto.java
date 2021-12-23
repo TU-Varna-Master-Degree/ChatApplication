@@ -1,6 +1,6 @@
-package domain.dto;
+package domain.client.dto;
 
-import domain.enums.FriendshipState;
+import domain.client.enums.FriendshipState;
 
 public class FriendsToGroupDto {
 

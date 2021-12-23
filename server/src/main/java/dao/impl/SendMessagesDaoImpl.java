@@ -1,7 +1,7 @@
 package dao.impl;
 
 import dao.SendMessageDao;
-import domain.dto.SendMessageDto;
+import domain.client.dto.SendMessageDto;
 
 import javax.persistence.EntityManager;
 

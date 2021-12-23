@@ -1,4 +1,4 @@
-package domain.dto;
+package domain.client.dto;
 
 public class SendMessageDto {
     private int messageType;

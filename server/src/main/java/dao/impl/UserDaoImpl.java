@@ -5,10 +5,12 @@ import dao.UserDao;
 import domain.entities.User;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 
 public class UserDaoImpl implements UserDao {
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     public UserDaoImpl() {
         this.entityManager = HibernateConfiguration.getEntityManager();
@@ -33,15 +35,18 @@ public class UserDaoImpl implements UserDao {
     }
 
     // Login user
-    public boolean login(String email, String password) {
-        String query = "select count(email) from User u "+
+    public Long login(String email, String password) {
+        String hql = "select u.id from User u "+
                 " where u.email = :email and u.password = :pass";
 
-        Long count = (Long) entityManager.createQuery(query)
-            .setParameter("email",email)
-            .setParameter("pass", password)
-            .getSingleResult();
+        Query query = entityManager.createQuery(hql);
+        query.setParameter("email",email);
+        query.setParameter("pass", password);
 
-        return !count.equals(0L);
+        try {
+            return (Long) query.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
+        }
     }
 }

@@ -1,7 +1,10 @@
-import domain.client.ServerRequest;
-import domain.client.ServerResponse;
-import domain.entities.User;
-import domain.enums.OperationType;
+import domain.client.dialogue.ServerRequest;
+import domain.client.dialogue.ServerResponse;
+import domain.client.dto.FindFriendDto;
+import domain.client.dto.UpdateFriendshipDto;
+import domain.client.dto.UserDto;
+import domain.client.enums.FriendshipState;
+import domain.client.enums.OperationType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,22 +26,52 @@ public class ServerHandler {
         serverHandler = new ServerHandler();
         serverHandler.start();
 
-        // Register request
-        ServerRequest<User> request = new ServerRequest<>(OperationType.USER_REGISTER);
-        User user = new User();
-        user.setUsername("Gosho");
+        // ** Register request ** //
+//        ServerRequest<UserDto> request2 = new ServerRequest<>(OperationType.USER_REGISTER);
+//        UserDto user = new UserDto();
+//        user.setUsername("Tihomir");
+//        user.setEmail("tisho@abv.bg");
+//        user.setPassword("1111");
+//        request2.setData(user);
+
+        // ** Login request ** //
+        ServerRequest<UserDto> request1 = new ServerRequest<>(OperationType.USER_LOGIN);
+        UserDto user = new UserDto();
         user.setEmail("gosho44@abv.bg");
         user.setPassword("1111");
-        request.setData(user);
+        request1.setData(user);
 
-        // Login request
-        // ServerRequest<User> request = new ServerRequest<>(OperationType.USER_LOGIN);
-        // User user = new User();
-        // user.setEmail("gosho44@abv.bg");
-        // user.setPassword("11111");
-        // request.setData(user);
+        serverHandler.sendRequest(request1);
 
-        serverHandler.sendRequest(request);
+        // ** Get friendships ** //
+//        ServerRequest<Long> request2 = new ServerRequest<>(OperationType.FRIENDSHIP_LIST);
+
+        // ** Create friendship ** //
+//        ServerRequest<Long> request2 = new ServerRequest<>(OperationType.CREATE_FRIENDSHIP);
+//        Long receiverId = 9L;
+//        request2.setData(receiverId);
+
+        // ** Update friendship state ** //
+//        ServerRequest<UpdateFriendshipDto> request2 = new ServerRequest<>(OperationType.UPDATE_FRIENDSHIP);
+//        UpdateFriendshipDto updateFriendshipDto = new UpdateFriendshipDto();
+//        Long receiverId = 8L;
+//        updateFriendshipDto.setReceiverId(receiverId);
+//        updateFriendshipDto.setFriendshipState(FriendshipState.ACCEPTED);
+//        request2.setData(updateFriendshipDto);
+
+        // ** Find friends ** //
+        ServerRequest<String> request2 = new ServerRequest<>(OperationType.FIND_FRIENDS);
+        String username = "o";
+        request2.setData(username);
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            serverHandler.sendRequest(request2);
+        }).start();
     }
 
     public void start() {
@@ -78,7 +111,7 @@ public class ServerHandler {
 
     private void listen() {
         while (true) {
-            ByteBuffer data = ByteBuffer.allocate(1024);
+            ByteBuffer data = ByteBuffer.allocate(1000 * 16);
             try {
                 server.read(data);
             } catch (IOException e) {
@@ -96,8 +129,12 @@ public class ServerHandler {
             data.clear();
 
             //TODO: remove after test
-            serverHandler.stop();
-            break;
+            if (++requestCounter == 2) {
+                serverHandler.stop();
+                break;
+            }
         }
     }
+
+    private static int requestCounter = 0; //TODO: remove after test
 }

@@ -1,5 +1,5 @@
 package dao;
-import domain.dto.FriendsToGroupDto;
+import domain.client.dto.FriendsToGroupDto;
 
 import java.util.List;
 

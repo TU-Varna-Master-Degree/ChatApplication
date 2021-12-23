@@ -1,8 +1,7 @@
 package dao.impl;
 
 import dao.BroadcastToGroupDao;
-import domain.dto.BroadcastToGroupDto;
-import domain.entities.GroupNotification;
+import domain.client.dto.BroadcastToGroupDto;
 
 import javax.persistence.EntityManager;
 

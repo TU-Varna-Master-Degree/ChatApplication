@@ -1,6 +1,6 @@
-package domain.dto;
+package domain.client.dto;
 
-import domain.enums.MessageType;
+import domain.client.enums.MessageType;
 
 public class BroadcastToGroupDto {
     private MessageType messageType;

@@ -1,6 +1,6 @@
 package dao;
 
-import domain.dto.BroadcastToGroupDto;
+import domain.client.dto.BroadcastToGroupDto;
 
 
 public interface BroadcastToGroupDao {

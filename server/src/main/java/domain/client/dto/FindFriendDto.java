@@ -1,11 +1,12 @@
-package domain.dto;
+package domain.client.dto;
 
-public class FindFriendDto {
+import java.io.Serializable;
+
+public class FindFriendDto implements Serializable {
     private Long id;
     private String username;
 
-    public FindFriendDto(Long id, String username)
-    {
+    public FindFriendDto(Long id, String username) {
         this.id = id;
         this.username = username;
     }

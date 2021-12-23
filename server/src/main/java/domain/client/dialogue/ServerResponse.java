@@ -1,7 +1,7 @@
-package domain.client;
+package domain.client.dialogue;
 
-import domain.enums.OperationType;
-import domain.enums.StatusCode;
+import domain.client.enums.OperationType;
+import domain.client.enums.StatusCode;
 
 import java.io.Serializable;
 
