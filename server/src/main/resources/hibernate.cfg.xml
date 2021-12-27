@@ -16,7 +16,7 @@
             postgres
         </property>
         <property name="hibernate.connection.password">
-            1wdvgy7
+            1234
         </property>
 
         <property name="hibernate.hbm2ddl.auto">
@@ -32,8 +32,7 @@
         <mapping class="domain.entities.Group"/>
         <mapping class="domain.entities.UserGroupId"/>
         <mapping class="domain.entities.UserGroup"/>
-        <mapping class="domain.entities.UserNotificationId"/>
-        <mapping class="domain.entities.UserNotification"/>
+        <mapping class="domain.entities.GroupNotificationId"/>
         <mapping class="domain.entities.GroupNotification"/>
         <mapping class="domain.entities.ChatFile"/>
         <mapping class="domain.entities.Friendship"/>

@@ -1,13 +1,10 @@
 package domain.entities;
 
-import javax.persistence.Embeddable;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Embeddable
-public class UserNotificationId implements Serializable {
+public class GroupNotificationId implements Serializable {
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "sender_id", referencedColumnName = "id", nullable = false)

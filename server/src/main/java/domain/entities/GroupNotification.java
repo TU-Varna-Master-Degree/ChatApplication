@@ -7,17 +7,17 @@ import javax.persistence.*;
 public class GroupNotification {
 
     @EmbeddedId
-    private UserNotificationId id;
+    private GroupNotificationId id;
 
-    @OneToOne(targetEntity = Group.class)
+    @ManyToOne(targetEntity = Group.class)
     @JoinColumn(name="group_id", referencedColumnName = "id", nullable = false)
     private Group group;
 
-    public UserNotificationId getId() {
+    public GroupNotificationId getId() {
         return id;
     }
 
-    public void setId(UserNotificationId id) {
+    public void setId(GroupNotificationId id) {
         this.id = id;
     }
 

@@ -6,24 +6,35 @@ import java.io.Serializable;
 
 public class FriendshipDto implements Serializable {
 
-    private String receiverUsername;
+    private Long groupId;
+
+    private Long senderId;
 
     private String senderUsername;
 
     private FriendshipState state;
 
-    public FriendshipDto(String receiverUsername, String senderUsername, FriendshipState state) {
-        this.receiverUsername = receiverUsername;
+    public FriendshipDto(Long groupId, Long senderId, String senderUsername, FriendshipState state) {
+        this.groupId = groupId;
+        this.senderId = senderId;
         this.senderUsername = senderUsername;
         this.state = state;
     }
 
-    public String getReceiverUsername() {
-        return receiverUsername;
+    public Long getGroupId() {
+        return groupId;
     }
 
-    public void setReceiverUsername(String receiverUsername) {
-        this.receiverUsername = receiverUsername;
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public Long getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(Long senderId) {
+        this.senderId = senderId;
     }
 
     public String getSenderUsername() {

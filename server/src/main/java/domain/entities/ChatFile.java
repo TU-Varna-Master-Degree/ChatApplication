@@ -12,6 +12,9 @@ public class ChatFile extends Identity {
     @Column(name = "file_path", nullable = false, length = 511)
     private String filePath;
 
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
+
     @Column(name = "file_size", nullable = false)
     private long fileSize;
 
@@ -29,6 +32,14 @@ public class ChatFile extends Identity {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public long getFileSize() {

@@ -1,3 +1,5 @@
+package init;
+
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -8,6 +10,7 @@ import java.nio.channels.SocketChannel;
 import java.util.*;
 
 import domain.client.dialogue.ServerResponse;
+import domain.client.enums.StatusCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import service.SessionService;
@@ -96,11 +99,13 @@ public class DispatcherServlet {
             }
         } else {
             ServerResponse response = handlerMapping.map(channel, key, data);
-            sendResponse(channel, response);
+            if (!response.getCode().equals(StatusCode.EMPTY)) {
+                sendResponse(channel, response);
+            }
         }
     }
 
-    private static void sendResponse(SocketChannel channel, ServerResponse response) {
+    public static void sendResponse(SocketChannel channel, ServerResponse response) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
             objectOutputStream.writeObject(response);

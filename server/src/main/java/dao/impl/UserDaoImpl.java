@@ -16,6 +16,17 @@ public class UserDaoImpl implements UserDao {
         this.entityManager = HibernateConfiguration.getEntityManager();
     }
 
+    public boolean checkUsernameExist(String username) {
+        String query = "select count(username) from User e where e.username = :username";
+
+        Long count = (Long) entityManager
+                .createQuery(query)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return count != 0;
+    }
+
     public boolean checkUserEmailExist(String email) {
         String query = "select count(email) from User e where e.email = :emailUser";
 
@@ -35,12 +46,12 @@ public class UserDaoImpl implements UserDao {
     }
 
     // Login user
-    public Long login(String email, String password) {
+    public Long login(String username, String password) {
         String hql = "select u.id from User u "+
-                " where u.email = :email and u.password = :pass";
+                " where u.username = :username and u.password = :pass";
 
         Query query = entityManager.createQuery(hql);
-        query.setParameter("email",email);
+        query.setParameter("username",username);
         query.setParameter("pass", password);
 
         try {
@@ -48,5 +59,10 @@ public class UserDaoImpl implements UserDao {
         } catch (NoResultException ex) {
             return null;
         }
+    }
+
+    @Override
+    public User getById(Long userId) {
+        return entityManager.find(User.class, userId);
     }
 }

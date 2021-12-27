@@ -20,6 +20,10 @@ public class UserServiceImpl implements UserService {
     }
 
     public ServerResponse register(UserDto userDto) {
+        if (userDao.checkUsernameExist(userDto.getUsername())) {
+            return new ServerResponse(StatusCode.FAILED, "Username already exists!");
+        }
+
         if (userDao.checkUserEmailExist(userDto.getEmail())) {
             return new ServerResponse(StatusCode.FAILED, "User email already exists!");
         }
@@ -32,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     public ServerResponse login(UserDto userDto) {
         String sha256Password = DigestUtils.sha256Hex(userDto.getPassword());
-        Long userId = userDao.login(userDto.getEmail(), sha256Password);
+        Long userId = userDao.login(userDto.getUsername(), sha256Password);
 
         if (userId != null) {
             ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL);

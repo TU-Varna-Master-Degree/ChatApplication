@@ -7,7 +7,7 @@ import java.io.Serializable;
 @Table(name = "users")
 public class User extends Identity implements Serializable {
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String username;
 
     @Column(unique = true, nullable = false)

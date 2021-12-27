@@ -1,9 +1,11 @@
+package init;
+
 import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
-import domain.client.dto.FindFriendDto;
-import domain.client.dto.UpdateFriendshipDto;
+import domain.client.dto.GroupMessageDto;
+import domain.client.dto.SendMessageDto;
 import domain.client.dto.UserDto;
-import domain.client.enums.FriendshipState;
+import domain.client.enums.MessageType;
 import domain.client.enums.OperationType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +14,8 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,15 +33,15 @@ public class ServerHandler {
         // ** Register request ** //
 //        ServerRequest<UserDto> request2 = new ServerRequest<>(OperationType.USER_REGISTER);
 //        UserDto user = new UserDto();
-//        user.setUsername("Tihomir");
-//        user.setEmail("tisho@abv.bg");
+//        user.setUsername("Gosho2");
+//        user.setEmail("gosho2@abv.bg");
 //        user.setPassword("1111");
 //        request2.setData(user);
 
         // ** Login request ** //
         ServerRequest<UserDto> request1 = new ServerRequest<>(OperationType.USER_LOGIN);
         UserDto user = new UserDto();
-        user.setEmail("gosho44@abv.bg");
+        user.setUsername("Gosho");
         user.setPassword("1111");
         request1.setData(user);
 
@@ -54,15 +58,58 @@ public class ServerHandler {
         // ** Update friendship state ** //
 //        ServerRequest<UpdateFriendshipDto> request2 = new ServerRequest<>(OperationType.UPDATE_FRIENDSHIP);
 //        UpdateFriendshipDto updateFriendshipDto = new UpdateFriendshipDto();
-//        Long receiverId = 8L;
+//        Long receiverId = 1L;
 //        updateFriendshipDto.setReceiverId(receiverId);
 //        updateFriendshipDto.setFriendshipState(FriendshipState.ACCEPTED);
 //        request2.setData(updateFriendshipDto);
 
         // ** Find friends ** //
-        ServerRequest<String> request2 = new ServerRequest<>(OperationType.FIND_FRIENDS);
-        String username = "o";
-        request2.setData(username);
+//        ServerRequest<String> request2 = new ServerRequest<>(OperationType.FIND_FRIENDS);
+//        String username = "o";
+//        request2.setData(username);
+
+        // ** Get user groups **//
+//        ServerRequest<String> request2 = new ServerRequest<>(OperationType.USER_GROUPS);
+
+        // ** Get friends for group ** //
+//        ServerRequest<Long> request2 = new ServerRequest<>(OperationType.GROUP_FRIENDS_LIST);
+//        Long groupId = 2L;
+//        request2.setData(groupId);
+
+        // ** Update friendship state ** //
+//        ServerRequest<AddGroupFriendsDto> request2 = new ServerRequest<>(OperationType.ADD_GROUP_FRIENDS);
+//        AddGroupFriendsDto addGroupFriendsDto = new AddGroupFriendsDto();
+//        addGroupFriendsDto.setGroupId(3L);
+//        addGroupFriendsDto.setUserIds(Arrays.asList(2L, 4L));
+//        request2.setData(addGroupFriendsDto);
+
+        // ** Get group notifications ** //
+        ServerRequest<Long> request2 = new ServerRequest<>(OperationType.GROUP_NOTIFICATIONS);
+        Long groupId = 7L;
+        request2.setData(groupId);
+
+        // ** Send message - TEXT ** //
+//        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
+//        SendMessageDto sendMessageDto = new SendMessageDto();
+//        sendMessageDto.setGroupId(7L);
+//        sendMessageDto.setMessageType(MessageType.TEXT);
+//        sendMessageDto.setContent("Test 6");
+//        request2.setData(sendMessageDto);
+
+        // ** Send message - FILE ** //
+//        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
+//        SendMessageDto sendMessageDto = new SendMessageDto();
+//        sendMessageDto.setGroupId(7L);
+//        sendMessageDto.setMessageType(MessageType.FILE);
+//        sendMessageDto.setFileName("tree");
+//        sendMessageDto.setFileType("png");
+//        final String filePath = "C:\\Users\\Ivaylo_nikolaev\\Desktop\\ChatApplication\\server\\src\\main\\resources\\files\\tree.png";
+//        try {
+//            sendMessageDto.setFile(Files.readAllBytes(Paths.get(filePath)));
+//        } catch (IOException e) {
+//            System.out.println("Parsing file exception.");
+//        }
+//        request2.setData(sendMessageDto);
 
         new Thread(() -> {
             try {
@@ -111,7 +158,7 @@ public class ServerHandler {
 
     private void listen() {
         while (true) {
-            ByteBuffer data = ByteBuffer.allocate(1000 * 16);
+            ByteBuffer data = ByteBuffer.allocate(1000 * 32);
             try {
                 server.read(data);
             } catch (IOException e) {

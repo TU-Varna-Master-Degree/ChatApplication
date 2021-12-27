@@ -18,11 +18,8 @@ public class Notification extends Identity {
     @Column(name = "send_date", nullable = false)
     private LocalDateTime sendDate;
 
-    @Column(nullable = false)
-    private boolean received;
-
-    @OneToOne(targetEntity = ChatFile.class)
-    @JoinColumn(name = "file_id", referencedColumnName = "id", nullable = false)
+    @OneToOne(targetEntity = ChatFile.class, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "file_id", referencedColumnName = "id")
     private ChatFile file;
 
     public MessageType getMessageType() {
@@ -47,14 +44,6 @@ public class Notification extends Identity {
 
     public void setSendDate(LocalDateTime sendDate) {
         this.sendDate = sendDate;
-    }
-
-    public boolean isReceived() {
-        return received;
-    }
-
-    public void setReceived(boolean received) {
-        this.received = received;
     }
 
     public ChatFile getFile() {

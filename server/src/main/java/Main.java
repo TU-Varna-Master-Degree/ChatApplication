@@ -1,81 +1,15 @@
 import config.HibernateConfiguration;
-import dao.AddToGroupDao;
-import dao.CreateGroupDao;
-import dao.FriendsToGroupDao;
-import dao.WhatGroupDao;
-import dao.impl.*;
-import domain.client.dto.FriendsToGroupDto;
-import domain.client.dto.UserMessagesDto;
-import domain.client.dto.WhatGroupDto;
-
-import java.util.List;
-
-import static config.HibernateConfiguration.getEntityManager;
+import init.DispatcherServlet;
 
 public class Main {
 
     public static void main(String[] args) {
-        HibernateConfiguration.init();
-        DispatcherServlet.listen();
-
-        DispatcherServlet.close();
-        HibernateConfiguration.close();
-    }
-
-    public static void WhatGroupById(long Id) {
-        WhatGroupDao whatGroupDao = new WhatGroupDaoImpl(getEntityManager());
-        List<domain.client.dto.WhatGroupDto> whatGroups = whatGroupDao.WhatGroup(Id);
-        for (WhatGroupDto gr : whatGroups)
-            System.out.println("\n име на група по ID : " + gr.getGroupName() +
-                    "Date " + gr.getFoundation() + "\n");
-    }
-
-
-    public static void WhatFriendsCanJoinGroup(long id) {
-        FriendsToGroupDao friendsToGroupDao =
-                new FriendsToGroupDaoImpl(getEntityManager());
-        List<FriendsToGroupDto> friends = friendsToGroupDao.FriendsForGroup(id);
-        System.out.println("Приятели, които могат да бъдат поканени в група: ");
-        for (FriendsToGroupDto fr : friends) {
-            System.out.println(fr.getSenderUsername() + "    " + fr.getReceiverUsername() +
-                    "    " + fr.getState());
-        }
-    }
-
-        public static void CreateAGroup( long Id, String name){
-            CreateGroupDao createGroupDao = new CreateGroupDaoImpl(getEntityManager());
-            boolean isUnique = createGroupDao.CreateGroup(Id, name);
-            System.out.println(isUnique);
-        }
-
-    public static void AddAFriendToGroup(long id1,long id2Group) {
-        AddToGroupDao addToGroupDao = new AddToGroupDaoImpl(getEntityManager());
-        addToGroupDao.AddToGroup(id1, id2Group);
-    }
-
-    static void loadUserMessagesTest() {
-        dao.LoadUserMessagesDao obj = new dao.impl.LoadUserMessagesDaoImpl(getEntityManager());
         try {
-            // TODO: Fix Query, Test should return convo of user 1L and user 2L
-            List<domain.client.dto.UserMessagesDto> l = obj.getMessages(1L, 2L);
-            for (UserMessagesDto o : l) {
-
-            }
-        } catch (Exception e) {
-            System.out.println(e.toString());
-        }
-
-    }
-
-    static void loadUserGroupsTest() {
-        dao.LoadUserGroupsDao obj = new LoadUserGroupsDaoImpl(getEntityManager());
-        try {
-            List l = obj.getGroups(1L);
-
-        } catch (Exception e) {
-            System.out.println(e.toString());
+            HibernateConfiguration.init();
+            DispatcherServlet.listen();
+        } finally {
+            DispatcherServlet.close();
+            HibernateConfiguration.close();
         }
     }
-
-
 }

@@ -26,11 +26,23 @@ public class FriendshipDaoImpl implements FriendshipDao {
     @Override
     public List<FriendshipDto> getFriendships(Long userId) {
         Query query = entityManager.createQuery(
-        "SELECT new domain.client.dto.FriendshipDto(f.id.receiver.username, " +
-                " f.id.sender.username, " +
+        "SELECT new domain.client.dto.FriendshipDto(( " +
+                "    SELECT iug.id.group.id" +
+                "     FROM UserGroup iug" +
+                "    WHERE iug.id.group.parent IS NULL" +
+                "     AND iug.id.user.id = f.id.receiver.id" +
+                "     AND EXISTS ( " +
+                "       SELECT 1 " +
+                "        FROM UserGroup iiug" +
+                "       WHERE iiug.id.group.parent IS NULL" +
+                "        AND iug.id.group.id = iiug.id.group.id " +
+                "        AND iiug.id.user.id = f.id.sender.id" +
+                "     )" +
+                "   ), (case when f.id.receiver.id = :userId then f.id.sender.id else f.id.receiver.id end), " +
+                " (case when f.id.receiver.id = :userId then f.id.sender.username else f.id.receiver.username end), " +
                 " f.friendshipState) " +
                 " FROM Friendship f " +
-                " WHERE (f.id.sender.id = :userId OR f.id.receiver.id = :userId)" +
+                " WHERE ((f.id.sender.id = :userId AND f.friendshipState = 'ACCEPTED') OR f.id.receiver.id = :userId)" +
                 " AND f.friendshipState != :friendshipState " +
                 " ORDER BY f.friendshipState DESC, f.updatedStateDate DESC");
 
