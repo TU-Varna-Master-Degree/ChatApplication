@@ -1,5 +1,15 @@
 package com.example.myapplication.activities;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Debug;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -7,16 +17,16 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.widget.CheckBox;
-import android.widget.EditText;
-
 import com.example.myapplication.FormRuleTest;
+import com.example.myapplication.NetClient;
 import com.example.myapplication.R;
 import com.example.myapplication.models.UserLoginModel;
+
+import domain.client.dialogue.ServerRequest;
+import domain.client.dialogue.ServerResponse;
+import domain.client.enums.OperationType;
+import domain.client.enums.StatusCode;
+
 
 public class LoginActivity extends AppCompatActivity
         implements ActivityResultCallback<ActivityResult>
@@ -28,6 +38,9 @@ public class LoginActivity extends AppCompatActivity
     private EditText etUserLoginInput;
     private EditText etPassword;
     private CheckBox chbRememberMe;
+    
+    FormRuleTest[] rules;
+    
     ActivityResultLauncher<Intent> startForResult;
     
     @Override
@@ -50,9 +63,20 @@ public class LoginActivity extends AppCompatActivity
             chbRememberMe.setChecked( savedInstanceState.getBoolean(LOGIN_REMEMBER) );
         }
         
+        if(Debug.isDebuggerConnected())
+        {
+            SetDebugInfo();
+        }
+        
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 LoginActivity.this);
+        
+        rules = new FormRuleTest[]
+        {
+                new FormRuleTest(etUserLoginInput, FormRuleTest.EMAIL_OR_PW_REG_EX),
+                new FormRuleTest(etPassword, FormRuleTest.PW_REG_EX)
+        };
     }
     
     @Override
@@ -68,7 +92,16 @@ public class LoginActivity extends AppCompatActivity
     protected void onStart()
     {
         super.onStart();
+        NetClient.register(this::onServerResponse);
+        
         TryRememberLogin();
+    }
+    
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        NetClient.unregister(this::onServerResponse);
     }
     
     @Override
@@ -77,14 +110,26 @@ public class LoginActivity extends AppCompatActivity
         if (result.getResultCode() == RegisterActivity.RESULT_OK)
         {
             Intent data = result.getData();
-            assert data != null;
-            Bundle bundle = data.getExtras();
-            
-            // TODO: Refactor
-            etUserLoginInput.setText( bundle.getString("Email") );
-            etPassword.setText( bundle.getString("Password") );
+            // TODO: Fill login with register data
         }
     }
+
+    
+    public void onServerResponse(ServerResponse response)
+    {
+        if(response.getOperationType() == OperationType.USER_LOGIN)
+        {
+            CompleteActivity(response);
+        }
+    }
+    
+    @SuppressLint("SetTextI18n")
+    private void SetDebugInfo()
+    {
+        etUserLoginInput.setText("nvmcomrade");
+        etPassword.setText("1q2w#E4r5t");
+    }
+    
     
     private void LaunchRegisterForm()
     {
@@ -105,34 +150,18 @@ public class LoginActivity extends AppCompatActivity
                 pref.getString(LOGIN_PASSWORD, null)
         );
     
-        
-        new Thread()
-        {
-            @Override
-            public void run()
-            {
-                if( RequestLogin(model) )
-                {
-                    FinishActivityJob();
-                }
-            }
-        }.start();
-        
+        RequestLogin(model);
     }
     
     private UserLoginModel FetchModel()
     {
         String userInput = etUserLoginInput.getText().toString(),
                 userPassword = etPassword.getText().toString();
-    
-        FormRuleTest[] rules = {
-            new FormRuleTest(userInput, FormRuleTest.EMAIL_OR_PW_REG_EX),
-            new FormRuleTest(userPassword, FormRuleTest.PW_REG_EX)
-        };
-    
+        
         for(FormRuleTest test : rules)
         {
             if(!test.check())
+                
                 return null;
         }
         
@@ -142,39 +171,22 @@ public class LoginActivity extends AppCompatActivity
     
     private void DoLogin()
     {
-        UserLoginModel model = FetchModel();
-        if( model == null)
+        UserLoginModel model;
+        if( (model = FetchModel()) != null)
         {
-            // TODO: Display User Message
-            return;
+            RequestLogin(model);
         }
-        
-        /// Attempt login in another thread
-        new Thread()
-        {
-            @Override
-            public void run()
-            {
-                if(RequestLogin(model))
-                {
-                    SaveConfig();
-                    FinishActivityJob();
-                }
-                else
-                {
-                    runOnUiThread(() ->
-                    {
-                        // TODO: Display User Message
-                    });
-                }
-            }
-        }.start();
     }
     
-    private boolean RequestLogin(UserLoginModel model)
+    private void RequestLogin(UserLoginModel model)
     {
         // TODO: Client sends login request to server
-        return false;
+        Object data = null;
+        
+        ServerRequest request = new ServerRequest(OperationType.USER_LOGIN);
+        request.setData(data);
+        
+        NetClient.sendRequest( request );
     }
     
     private void SaveConfig()
@@ -189,13 +201,25 @@ public class LoginActivity extends AppCompatActivity
         pref.apply();
     }
     
-    private void FinishActivityJob()
+    private void CompleteActivity(ServerResponse response)
     {
-        Intent intent = getIntent();
-        // TODO: Save state
-        
-        setResult( LoginActivity.RESULT_OK );
-        this.finish();
+        if(response.getCode() == StatusCode.SUCCESSFUL)
+        {
+            SaveConfig();
+            Intent intent = getIntent();
+            // TODO: Save state
+    
+            setResult( LoginActivity.RESULT_OK );
+            this.finish();
+        }
+        else
+        {
+            runOnUiThread(() ->
+            {
+                Toast.makeText(LoginActivity.this, "Failed to login.", Toast.LENGTH_LONG).show();
+            });
+        }
     }
+    
     
 }

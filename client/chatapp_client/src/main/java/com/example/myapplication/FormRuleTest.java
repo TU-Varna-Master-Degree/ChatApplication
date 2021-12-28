@@ -1,8 +1,12 @@
 package com.example.myapplication;
 
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
+
 import java.util.regex.Pattern;
 
-public class FormRuleTest
+public class FormRuleTest implements TextWatcher
 {
     /*
              - Password must contain at least one digit [0-9].
@@ -26,17 +30,37 @@ public class FormRuleTest
     public static final Pattern EMAIL_OR_PW_REG_EX =
             Pattern.compile("^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$|^[a-zA-Z0-9\\._\\-]{5,}$" );
     
-    private final String input;
+    private final EditText input;
     private final Pattern pattern;
     
-    public FormRuleTest(String input, Pattern pattern)
+    public FormRuleTest(EditText input, Pattern pattern)
     {
         this.input = input;
         this.pattern = pattern;
+    
+        input.addTextChangedListener(this);
     }
     
     public boolean check()
     {
-        return pattern.matcher( input ).matches();
+        return pattern.matcher( input.getText().toString() ).matches();
+    }
+    
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2)
+    {
+    
+    }
+    
+    @Override
+    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2)
+    {
+        
+    }
+    
+    @Override
+    public void afterTextChanged(Editable editable)
+    {
+    
     }
 }

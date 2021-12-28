@@ -1,19 +1,25 @@
 package com.example.myapplication.activities;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Debug;
+import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.EditText;
-
 import com.example.myapplication.FormRuleTest;
+import com.example.myapplication.NetClient;
 import com.example.myapplication.R;
-import com.example.myapplication.ServerHandler;
-import com.example.myapplication.models.User;
 import com.example.myapplication.models.UserRegisterModel;
-import com.example.myapplication.models.client.ServerRequest;
-import com.example.myapplication.models.enums.OperationType;
+
+import domain.client.dialogue.ServerRequest;
+import domain.client.dialogue.ServerResponse;
+import domain.client.dto.UserDto;
+import domain.client.enums.OperationType;
+import domain.client.enums.StatusCode;
 
 public class RegisterActivity extends AppCompatActivity
 {
@@ -26,6 +32,8 @@ public class RegisterActivity extends AppCompatActivity
     private EditText etEmail;
     private EditText etPassword;
     private EditText etConfirmPassword;
+    
+    FormRuleTest[] rules;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -55,6 +63,17 @@ public class RegisterActivity extends AppCompatActivity
             etPassword.setText( savedInstanceState.getString(REGISTER_PASSWORD) );
             etConfirmPassword.setText( savedInstanceState.getString(REGISTER_CONFIRM_PASSWORD) );
         }
+        
+        if( Debug.isDebuggerConnected())
+        {
+            SetDebugInfo();
+        }
+        
+        rules = new FormRuleTest[] {
+                new FormRuleTest( etUsername, FormRuleTest.USER_REG_EX),
+                new FormRuleTest( etPassword, FormRuleTest.PW_REG_EX),
+                new FormRuleTest( etEmail, FormRuleTest.EMAIL_REG_EX),
+        };
     }
     
     @Override
@@ -67,81 +86,81 @@ public class RegisterActivity extends AppCompatActivity
         outState.putString(REGISTER_CONFIRM_PASSWORD, etConfirmPassword.getText().toString());
     }
     
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        NetClient.register(this::onServerResponse);
+    }
+    
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        NetClient.unregister(this::onServerResponse);
+    }
+    
+    @SuppressLint("SetTextI18n")
+    private void SetDebugInfo()
+    {
+        etUsername.setText("nvmcomrade");
+        etEmail.setText("vonamedog.d@gmail.com");
+        etPassword.setText("1q2w#E4r5t");
+        etConfirmPassword.setText("1q2w#E4r5t");
+    }
+    
     private void DoRegister()
     {
-        UserRegisterModel model = FetchModel();
-        
-        if(model == null)
+        UserRegisterModel model;
+        if((model = FetchFormModel()) != null)
         {
-            // TODO: Display user message -> Failed validation
-            return;
-        }
-        
-        // TODO: Block user controls and animation
-        
-        // Launch in new thread
-        // new Thread()
-        // {
-        //     @Override
-        //     public void run()
-        //     {
-        //
-        //     }
-        // }.start();
-    
-        if( !RequestRegister(model) )
-        {
-            // runOnUiThread(() ->
-            // {
-            //     // TODO: Display user message
-            // });
-        }
-        else
-        {
-            // FinishActivityJob( model );
+            RequestRegister(model);
         }
     }
     
-    private boolean RequestRegister(UserRegisterModel model)
+    private void RequestRegister(UserRegisterModel model)
     {
-        // TODO: Client register request
-        User user = new User();
+        UserDto user = new UserDto();
         user.setEmail( model.getEmail() );
         user.setPassword( model.getPassword() );
         user.setUsername( model.getUsername() );
     
-        ServerRequest<User> request = new ServerRequest<>(OperationType.USER_REGISTER);
+        ServerRequest<UserDto> request =
+                new domain.client.dialogue.ServerRequest<>(OperationType.USER_REGISTER);
         request.setData( user );
         
-        ServerHandler.sendRequest(request);
-        return false;
+        NetClient.sendRequest(request);
+    
+        // TODO: Block user controls and animation
     }
     
-    private void FinishActivityJob(UserRegisterModel model)
+    private void CompleteRegister(ServerResponse model)
     {
-        Intent intent = getIntent();
-        intent.putExtra("Username", model.getUsername());
-        intent.putExtra("Password", model.getPassword());
-        intent.putExtra("Email", model.getEmail());
-    
-        setResult(RESULT_OK);
-        
-        RegisterActivity.this.finish();
+        if(model.getCode() == StatusCode.SUCCESSFUL)
+        {
+            Intent intent = getIntent();
+            
+            // TODO: write response data to intent
+            
+            setResult(RESULT_OK);
+            RegisterActivity.this.finish();
+        }
+        else
+        {
+            runOnUiThread(()->
+            {
+                Toast.makeText(this, "Failed to register", Toast.LENGTH_LONG).show();
+            });
+        }
     }
     
     
-    private UserRegisterModel FetchModel()
+    private UserRegisterModel FetchFormModel()
     {
         String password = etPassword.getText().toString(),
                 confirm_password = etConfirmPassword.getText().toString(),
         user = etUsername.getText().toString(),
         mail =  etEmail.getText().toString();
-        
-        final FormRuleTest[] rules = {
-            new FormRuleTest( user, FormRuleTest.USER_REG_EX),
-            new FormRuleTest( password, FormRuleTest.PW_REG_EX),
-            new FormRuleTest( mail, FormRuleTest.EMAIL_REG_EX),
-        };
         
         if(!password.equals(confirm_password))
             return null;
@@ -149,10 +168,19 @@ public class RegisterActivity extends AppCompatActivity
         for(FormRuleTest rule : rules)
         {
             if( !rule.check() )
+            {
                 return null;
+            }
         }
         
-
         return new UserRegisterModel(user, mail, password);
+    }
+    
+    public void onServerResponse(ServerResponse response)
+    {
+        if (response.getOperationType() == OperationType.USER_REGISTER)
+        {
+            CompleteRegister(response);
+        }
     }
 }
