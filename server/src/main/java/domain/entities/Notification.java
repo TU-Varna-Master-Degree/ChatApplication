@@ -18,7 +18,7 @@ public class Notification extends Identity {
     @Column(name = "send_date", nullable = false)
     private LocalDateTime sendDate;
 
-    @OneToOne(targetEntity = ChatFile.class, cascade = CascadeType.PERSIST)
+    @OneToOne(targetEntity = ChatFile.class, cascade = CascadeType.PERSIST, orphanRemoval = true)
     @JoinColumn(name = "file_id", referencedColumnName = "id")
     private ChatFile file;
 

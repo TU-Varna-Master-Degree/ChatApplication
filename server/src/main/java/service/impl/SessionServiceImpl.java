@@ -18,10 +18,10 @@ public class SessionServiceImpl implements SessionService {
         sessions = new HashMap<>();
     }
 
-    public void createSession(ServerResponse serverResponse, SocketChannel socketChannel, SelectionKey key) {
+    public void createSession(ServerResponse serverResponse, SelectionKey key) {
         if (serverResponse.getCode().equals(StatusCode.SUCCESSFUL)) {
             Long userId = (Long) serverResponse.getData();
-            sessions.put(userId, socketChannel);
+            sessions.put(userId, (SocketChannel) key.channel());
             key.attach(userId);
         }
     }

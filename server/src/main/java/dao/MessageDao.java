@@ -10,5 +10,9 @@ public interface MessageDao {
 
     public List<MessageDto> getGroupMessages(Long userId, Long groupId);
 
+    public void saveNotification(Notification notification);
+
     public void saveGroupNotification(GroupNotification groupNotification);
+
+    public GroupNotification getGroupNotificationById(Long senderId, Long notificationId);
 }
