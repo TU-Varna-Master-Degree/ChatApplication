@@ -13,6 +13,8 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -33,8 +35,8 @@ public class ServerHandler {
         // ** Register request ** //
 //        ServerRequest<UserDto> request2 = new ServerRequest<>(OperationType.USER_REGISTER);
 //        UserDto user = new UserDto();
-//        user.setUsername("Gosho2");
-//        user.setEmail("gosho2@abv.bg");
+//        user.setUsername("Gosho32");
+//        user.setEmail("gosho32@abv.bg");
 //        user.setPassword("1111");
 //        request2.setData(user);
 
@@ -76,7 +78,7 @@ public class ServerHandler {
 //        Long groupId = 2L;
 //        request2.setData(groupId);
 
-        // ** Update friendship state ** //
+        // ** Update group participants ** //
 //        ServerRequest<AddGroupFriendsDto> request2 = new ServerRequest<>(OperationType.ADD_GROUP_FRIENDS);
 //        AddGroupFriendsDto addGroupFriendsDto = new AddGroupFriendsDto();
 //        addGroupFriendsDto.setGroupId(3L);
@@ -93,13 +95,36 @@ public class ServerHandler {
 //        SendMessageDto sendMessageDto = new SendMessageDto();
 //        sendMessageDto.setGroupId(7L);
 //        sendMessageDto.setMessageType(MessageType.TEXT);
-//        sendMessageDto.setContent("Test 6");
+//        sendMessageDto.setContent("Test 10");
 //        request2.setData(sendMessageDto);
 
         // ** Send message - FILE ** //
 //        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
 //        SendMessageDto sendMessageDto = new SendMessageDto();
 //        sendMessageDto.setGroupId(7L);
+//        sendMessageDto.setMessageType(MessageType.FILE);
+//        sendMessageDto.setFileName("tree");
+//        sendMessageDto.setFileType("png");
+//        final String filePath = "C:\\Users\\Ivaylo_nikolaev\\Desktop\\ChatApplication\\server\\src\\main\\resources\\files\\tree.png";
+//        try {
+//            sendMessageDto.setFile(Files.readAllBytes(Paths.get(filePath)));
+//        } catch (IOException e) {
+//            System.out.println("Parsing file exception.");
+//        }
+//        request2.setData(sendMessageDto);
+
+        // ** Edit message - TEXT ** //
+//        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.EDIT_NOTIFICATION);
+//        SendMessageDto sendMessageDto = new SendMessageDto();
+//        sendMessageDto.setMessageId(21L);
+//        sendMessageDto.setMessageType(MessageType.TEXT);
+//        sendMessageDto.setContent("Test 9");
+//        request2.setData(sendMessageDto);
+
+        // ** Edit message - FILE ** //
+//        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.EDIT_NOTIFICATION);
+//        SendMessageDto sendMessageDto = new SendMessageDto();
+//        sendMessageDto.setMessageId(21L);
 //        sendMessageDto.setMessageType(MessageType.FILE);
 //        sendMessageDto.setFileName("tree");
 //        sendMessageDto.setFileType("png");
@@ -150,19 +175,38 @@ public class ServerHandler {
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
             objectOutputStream.writeObject(serverRequest);
             objectOutputStream.flush();
-            server.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
+            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
+
+            ByteBuffer header = ByteBuffer.allocate(4);
+            header.putInt(byteBuffer.limit());
+            header.flip();
+            while (header.hasRemaining()) {
+                server.write(header);
+            }
+
+            while (byteBuffer.hasRemaining()) {
+                server.write(byteBuffer);
+            }
         } catch (IOException e) {
             logger.error("Sending message to the server failed!");
         }
     }
 
     private void listen() {
+        ByteBuffer header = ByteBuffer.allocate(4);
+
         while (true) {
-            ByteBuffer data = ByteBuffer.allocate(1000 * 32);
-            try {
-                server.read(data);
-            } catch (IOException e) {
-                logger.error("Unable to read data from server!");
+            header.clear();
+            if (!readFromServer(header, server)) {
+                return;
+            }
+
+            header.flip();
+            int length = header.getInt();
+
+            ByteBuffer data = ByteBuffer.allocate(length);
+            if (!readFromServer(data, server)) {
+                return;
             }
 
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data.array());
@@ -173,15 +217,31 @@ public class ServerHandler {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            data.clear();
-
-            //TODO: remove after test
-            if (++requestCounter == 2) {
-                serverHandler.stop();
-                break;
-            }
         }
     }
 
-    private static int requestCounter = 0; //TODO: remove after test
+    private static boolean readFromServer(ByteBuffer data, SocketChannel channel) {
+        try {
+            while (data.hasRemaining()) {
+                if (channel.read(data) == -1) {
+                    closeChannel(channel);
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Unable to read from server!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void closeChannel(SocketChannel channel) {
+        try {
+            channel.close();
+            logger.info("Server channel closed!");
+        } catch (IOException e) {
+            logger.error("Unable to close server connection!");
+        }
+    }
 }

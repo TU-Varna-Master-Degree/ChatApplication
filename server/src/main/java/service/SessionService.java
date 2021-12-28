@@ -7,7 +7,7 @@ import java.nio.channels.SocketChannel;
 
 public interface SessionService {
 
-    public void createSession(ServerResponse serverResponse, SocketChannel socketChannel, SelectionKey key);
+    public void createSession(ServerResponse serverResponse, SelectionKey key);
 
     public void destroySession(SelectionKey key);
 

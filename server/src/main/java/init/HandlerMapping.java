@@ -15,7 +15,6 @@ import domain.client.dto.SendMessageDto;
 import domain.client.dto.UpdateFriendshipDto;
 import domain.client.dto.UserDto;
 import domain.client.enums.StatusCode;
-import org.modelmapper.ModelMapper;
 import service.*;
 import service.impl.FriendshipServiceImpl;
 import service.impl.GroupServiceImpl;
@@ -40,18 +39,17 @@ public class HandlerMapping {
 
     public HandlerMapping(SessionService sessionService) {
         this.sessionService = sessionService;
-        ModelMapper modelMapper = new ModelMapper();
         UserDao userDao = new UserDaoImpl();
         FriendshipDao friendshipDao = new FriendshipDaoImpl();
         GroupDao groupDao = new GroupDaoImpl();
         MessageDao messageDao = new MessageDaoImpl();
-        this.userService = new UserServiceImpl(userDao, modelMapper);
+        this.userService = new UserServiceImpl(userDao);
         this.groupService = new GroupServiceImpl(groupDao, userDao);
         this.friendshipService = new FriendshipServiceImpl(friendshipDao, groupService);
         this.notificationService = new NotificationServiceImpl(messageDao, groupDao, userDao, sessionService);
     }
 
-    public ServerResponse map(SocketChannel channel, SelectionKey key, ByteBuffer data) {
+    public ServerResponse map(SelectionKey key, ByteBuffer data) {
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(data.array()))) {
             ServerRequest request = (ServerRequest) objectInputStream.readObject();
             Long userId = sessionService.getCurrentUserId(key);
@@ -63,7 +61,7 @@ public class HandlerMapping {
                     break;
                 case USER_LOGIN:
                     serverResponse = userService.login((UserDto) request.getData());
-                    sessionService.createSession(serverResponse, channel, key);
+                    sessionService.createSession(serverResponse, key);
                     break;
                 case FRIENDSHIP_LIST:
                     serverResponse = authorize(() ->
@@ -100,6 +98,10 @@ public class HandlerMapping {
                 case CREATE_NOTIFICATION:
                     serverResponse = authorize(() ->
                             notificationService.createMessage(userId, (SendMessageDto) request.getData()), key);
+                    break;
+                case EDIT_NOTIFICATION:
+                    serverResponse = authorize(() ->
+                            notificationService.editMessage(userId, (SendMessageDto) request.getData()), key);
                     break;
                 default:
                     serverResponse = new ServerResponse(StatusCode.FAILED, "Operation not found!");

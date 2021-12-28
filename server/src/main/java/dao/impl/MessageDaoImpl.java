@@ -8,6 +8,7 @@ import domain.entities.GroupNotification;
 import domain.entities.Notification;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.List;
 
@@ -51,6 +52,14 @@ public class MessageDaoImpl implements MessageDao {
         return query.getResultList();
     }
 
+    @Override
+    public void saveNotification(Notification notification) {
+        entityManager.getTransaction().begin();
+        entityManager.persist(notification);
+        entityManager.getTransaction().commit();
+    }
+
+    @Override
     public void saveGroupNotification(GroupNotification groupNotification) {
         try {
             entityManager.getTransaction().begin();
@@ -59,6 +68,24 @@ public class MessageDaoImpl implements MessageDao {
             entityManager.getTransaction().commit();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
+        }
+    }
+
+    @Override
+    public GroupNotification getGroupNotificationById(Long senderId, Long notificationId) {
+        String sql = "SELECT gn " +
+                "FROM GroupNotification gn " +
+                "WHERE gn.id.notification.id = :notificationId " +
+                " AND gn.id.sender.id = :senderId";
+
+        Query query = entityManager.createQuery(sql);
+        query.setParameter("notificationId", notificationId);
+        query.setParameter("senderId", senderId);
+
+        try {
+            return (GroupNotification) query.getSingleResult();
+        } catch (NoResultException ex) {
+            return null;
         }
     }
 }

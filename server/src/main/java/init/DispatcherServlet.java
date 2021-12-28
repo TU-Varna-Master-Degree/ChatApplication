@@ -81,27 +81,52 @@ public class DispatcherServlet {
 
     private static void processRequest(SelectionKey key) {
         SocketChannel channel = (SocketChannel) key.channel();
-        ByteBuffer data = ByteBuffer.allocate(1000 * 16);
-        int read = 0;
-        try {
-            read = channel.read(data);
-        } catch (IOException e) {
-            logger.error("Unable to read from channel!");
+
+        ByteBuffer header = ByteBuffer.allocate(4);
+        if (!readFromChannel(header, key)) {
+            return;
         }
 
-        if (read == -1) {
-            try {
-                sessionService.destroySession(key);
-                channel.close();
-                logger.info("Client channel closed!");
-            } catch (IOException e) {
-                logger.error("Unable to close channel!");
+        header.flip();
+        int length = header.getInt();
+
+        ByteBuffer data = ByteBuffer.allocate(length);
+        if (!readFromChannel(data, key)) {
+            return;
+        }
+
+        ServerResponse response = handlerMapping.map(key, data);
+        if (!response.getCode().equals(StatusCode.EMPTY)) {
+            sendResponse(channel, response);
+        }
+    }
+
+    private static boolean readFromChannel(ByteBuffer data, SelectionKey key) {
+        SocketChannel channel = (SocketChannel) key.channel();
+
+        try {
+            while (data.hasRemaining()) {
+                if (channel.read(data) == -1) {
+                    closeChannel(key);
+                    return false;
+                }
             }
-        } else {
-            ServerResponse response = handlerMapping.map(channel, key, data);
-            if (!response.getCode().equals(StatusCode.EMPTY)) {
-                sendResponse(channel, response);
-            }
+        } catch (IOException e) {
+            closeChannel(key);
+            logger.error("Unable to read from channel!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void closeChannel(SelectionKey key) {
+        try {
+            sessionService.destroySession(key);
+            key.channel().close();
+            logger.info("Client channel closed!");
+        } catch (IOException e) {
+            logger.error("Unable to close client!");
         }
     }
 
@@ -110,7 +135,18 @@ public class DispatcherServlet {
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
             objectOutputStream.writeObject(response);
             objectOutputStream.flush();
-            channel.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
+            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
+
+            ByteBuffer header = ByteBuffer.allocate(4);
+            header.putInt(byteBuffer.limit());
+            header.flip();
+            while (header.hasRemaining()) {
+                channel.write(header);
+            }
+
+            while (byteBuffer.hasRemaining()) {
+                channel.write(byteBuffer);
+            }
         } catch (IOException ex) {
             logger.error("Sending response to client failed!");
         }

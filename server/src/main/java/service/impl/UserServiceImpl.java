@@ -7,16 +7,13 @@ import domain.client.enums.StatusCode;
 import domain.entities.User;
 import org.apache.commons.codec.digest.DigestUtils;
 import service.UserService;
-import org.modelmapper.ModelMapper;
 
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
-    private final ModelMapper modelMapper;
 
-    public UserServiceImpl(UserDao userDao, ModelMapper modelMapper) {
+    public UserServiceImpl(UserDao userDao) {
         this.userDao = userDao;
-        this.modelMapper = modelMapper;
     }
 
     public ServerResponse register(UserDto userDto) {
@@ -28,8 +25,11 @@ public class UserServiceImpl implements UserService {
             return new ServerResponse(StatusCode.FAILED, "User email already exists!");
         }
 
-        User user = this.modelMapper.map(userDto, User.class);
+        User user = new User();
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
         user.setPassword(DigestUtils.sha256Hex(userDto.getPassword()));
+
         userDao.save(user);
         return new ServerResponse(StatusCode.SUCCESSFUL);
     }

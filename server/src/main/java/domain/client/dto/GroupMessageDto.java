@@ -1,6 +1,5 @@
 package domain.client.dto;
 
-import domain.client.enums.MessageAction;
 import domain.client.enums.MessageType;
 
 import java.io.Serializable;
@@ -8,7 +7,6 @@ import java.time.LocalDateTime;
 
 public class GroupMessageDto implements Serializable {
 
-    private MessageAction messageAction;
     private Long messageId;
     private Long groupId;
     private MessageType messageType;
@@ -19,14 +17,6 @@ public class GroupMessageDto implements Serializable {
     private LocalDateTime sendDate;
     private Long userId;
     private String username;
-
-    public MessageAction getMessageAction() {
-        return messageAction;
-    }
-
-    public void setMessageAction(MessageAction messageAction) {
-        this.messageAction = messageAction;
-    }
 
     public Long getMessageId() {
         return messageId;
