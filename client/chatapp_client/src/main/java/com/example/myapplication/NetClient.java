@@ -71,7 +71,18 @@ public class NetClient implements Serializable
             objectOutputStream.writeObject(serverRequest);
             objectOutputStream.flush();
             System.out.println( "[WRITE OBJ]" );
-            server.write(ByteBuffer.wrap(byteArrayOutputStream.toByteArray()));
+            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
+
+            ByteBuffer header = ByteBuffer.allocate(4);
+            header.putInt(byteBuffer.limit());
+            header.flip();
+            while (header.hasRemaining()) {
+                server.write(header);
+            }
+
+            while (byteBuffer.hasRemaining()) {
+                server.write(byteBuffer);
+            }
         }
         catch (IOException e)
         {
@@ -83,17 +94,21 @@ public class NetClient implements Serializable
     
     private static void listen()
     {
+        ByteBuffer header = ByteBuffer.allocate(4);
+
         while (true)
         {
-            // TODO : Realloc ???
-            ByteBuffer data = ByteBuffer.allocate(1024);
-            try
-            {
-                server.read(data);
+            header.clear();
+            if (!readFromServer(header, server)) {
+                return;
             }
-            catch (IOException e)
-            {
-               // logger.error("Unable to read data from server!");
+
+            header.flip();
+            int length = header.getInt();
+
+            ByteBuffer data = ByteBuffer.allocate(length);
+            if (!readFromServer(data, server)) {
+                return;
             }
 
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data.array());
@@ -117,27 +132,29 @@ public class NetClient implements Serializable
             data.clear();
         }
     }
-    
-    public static void main(String[] args) throws IOException
-    {
-        NetClient.start("95.42.42.125", 1300);
-        
-        // Register request
-//        ServerRequest<User> request = new ServerRequest<>(OperationType.USER_REGISTER);
-//        User user = new User();
-//        user.setUsername("Gosho");
-//        user.setEmail("gosho44@abv.bg");
-//        user.setPassword("1111");
-//        request.setData(user);
-        
-        // Login request
-    
-        ServerRequest<UserDto> request =  new ServerRequest<>(OperationType.USER_LOGIN);
-        UserDto user = new UserDto();
-        user.setEmail("gosho44@abv.bg");
-        user.setPassword("11111");
-        request.setData(user);
-    
-        NetClient.sendRequest(request);
+
+    private static boolean readFromServer(ByteBuffer data, SocketChannel channel) {
+        try {
+            while (data.hasRemaining()) {
+                if (channel.read(data) == -1) {
+                    closeChannel(channel);
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Unable to read from server!");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static void closeChannel(SocketChannel channel) {
+        try {
+            channel.close();
+            System.out.println("Server channel closed!");
+        } catch (IOException e) {
+            System.out.println("Unable to close server connection!");
+        }
     }
 }
