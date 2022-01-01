@@ -2,23 +2,23 @@ package com.example.myapplication.models;
 
 public class UserLoginModel
 {
-    private String email;
+    private String username;
     private String password;
     
-    public UserLoginModel(String email, String password)
+    public UserLoginModel(String username, String password)
     {
-        this.email = email;
+        this.username = username;
         this.password = password;
     }
     
-    public String getEmail()
+    public String getUsername()
     {
-        return email;
+        return username;
     }
     
-    public void setEmail(String email)
+    public void setUsername(String username)
     {
-        this.email = email;
+        this.username = username;
     }
     
     public String getPassword()

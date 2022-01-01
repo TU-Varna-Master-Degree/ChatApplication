@@ -24,8 +24,10 @@ import com.example.myapplication.models.UserLoginModel;
 
 import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
+import domain.client.dto.UserDto;
 import domain.client.enums.OperationType;
 import domain.client.enums.StatusCode;
+import domain.entities.User;
 
 
 public class LoginActivity extends AppCompatActivity
@@ -115,8 +117,7 @@ public class LoginActivity extends AppCompatActivity
     }
 
     
-    public void onServerResponse(ServerResponse response)
-    {
+    public void onServerResponse(ServerResponse response) {
         if(response.getOperationType() == OperationType.USER_LOGIN)
         {
             CompleteActivity(response);
@@ -126,8 +127,8 @@ public class LoginActivity extends AppCompatActivity
     @SuppressLint("SetTextI18n")
     private void SetDebugInfo()
     {
-        etUserLoginInput.setText("nvmcomrade");
-        etPassword.setText("1q2w#E4r5t");
+        etUserLoginInput.setText("Gosho");
+        etPassword.setText("1111");
     }
     
     
@@ -171,22 +172,25 @@ public class LoginActivity extends AppCompatActivity
     
     private void DoLogin()
     {
-        UserLoginModel model;
-        if( (model = FetchModel()) != null)
-        {
-            RequestLogin(model);
-        }
+//        UserLoginModel model;
+//        if( (model = FetchModel()) != null)
+//        {
+//            RequestLogin(model);
+//        }
+        RequestLogin(new UserLoginModel(
+            etUserLoginInput.getText().toString(),
+            etPassword.getText().toString()));
     }
     
-    private void RequestLogin(UserLoginModel model)
-    {
-        // TODO: Client sends login request to server
-        Object data = null;
-        
-        ServerRequest request = new ServerRequest(OperationType.USER_LOGIN);
-        request.setData(data);
-        
-        NetClient.sendRequest( request );
+    private void RequestLogin(UserLoginModel model) {
+        ServerRequest<UserDto> request = new ServerRequest<>(OperationType.USER_LOGIN);
+
+        UserDto user = new UserDto();
+        user.setUsername(model.getUsername());
+        user.setPassword(model.getPassword());
+        request.setData(user);
+
+        NetClient.sendRequest(request);
     }
     
     private void SaveConfig()
@@ -209,7 +213,7 @@ public class LoginActivity extends AppCompatActivity
             Intent intent = getIntent();
             // TODO: Save state
     
-            setResult( LoginActivity.RESULT_OK );
+            setResult(LoginActivity.RESULT_OK);
             this.finish();
         }
         else

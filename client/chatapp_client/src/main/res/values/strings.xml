@@ -18,4 +18,6 @@
     <string name="login_btn_login"> Login </string>
     <string name="login_tv_register"> <u>Don\'t have an account? Signup</u> </string>
     <string name="login_chb_remember"> Remember me </string>
+    <string name="home_tv_search"> Find new friends </string>
+    <string name="home_btn_new_friendship"> Add </string>
 </resources>

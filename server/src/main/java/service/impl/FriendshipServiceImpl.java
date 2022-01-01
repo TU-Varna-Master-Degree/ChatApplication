@@ -42,7 +42,9 @@ public class FriendshipServiceImpl implements FriendshipService {
         }
 
         friendshipDao.createFriendship(senderId, receiverId);
-        return new ServerResponse(StatusCode.SUCCESSFUL, "Приятелската заявка беше успешно създадена!");
+        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "Приятелската заявка беше успешно създадена!");
+        response.setData(receiverId);
+        return response;
     }
 
     @Override

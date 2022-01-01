@@ -38,6 +38,7 @@ public class GroupServiceImpl implements GroupService {
             LocalDateTime lastSendMessageDate = (LocalDateTime) g[1];
             List<String> userNames = group.getUserGroups()
                 .stream()
+                .filter(ug -> !ug.getId().getUser().getId().equals(userId))
                 .map(ug -> ug.getId()
                         .getUser()
                         .getUsername())

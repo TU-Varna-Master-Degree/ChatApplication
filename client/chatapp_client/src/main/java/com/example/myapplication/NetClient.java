@@ -1,5 +1,10 @@
 package com.example.myapplication;
 
+import android.content.Context;
+import android.widget.Toast;
+
+import com.example.myapplication.activities.MainActivity;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,58 +24,54 @@ import domain.client.dialogue.ServerResponse;
 import domain.client.dto.UserDto;
 import domain.client.enums.OperationType;
 
-public class NetClient implements Serializable
-{
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(3);
+public class NetClient {
+
+    private static final String SERVER_ADDRESS = "95.42.42.125";
+    private static final int SERVER_PORT = 1300;
+
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private static SocketChannel server;
     private static final ArrayList<Consumer<ServerResponse>> handlerList = new ArrayList<>();
-    
-    public static void register(Consumer<ServerResponse> handler)
-    {
+
+    public static void register(Consumer<ServerResponse> handler) {
         handlerList.add(handler);
     }
     
-    public static void unregister(Consumer<ServerResponse> handler)
-    {
+    public static void unregister(Consumer<ServerResponse> handler) {
         handlerList.remove(handler);
     }
     
-    public boolean isRunning()
-    {
+    public boolean isRunning() {
         return server.isOpen();
     }
     
-    public static void start(String ip, int port) throws IOException
-    {
-        server = SocketChannel.open( new InetSocketAddress(ip, port) );
-        
-        executorService.execute( NetClient::listen );
+    public static void start(Consumer<Runnable> runOnUiThread, Context context) {
+        executorService.execute(() -> {
+            try {
+                server = SocketChannel.open(new InetSocketAddress(SERVER_ADDRESS, SERVER_PORT));
+                NetClient.listen();
+            } catch (IOException e) {
+                runOnUiThread.accept(() -> {
+                    Toast.makeText(context, "Failed to connect server.", Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
     
-    public static void stop() throws IOException
-    {
+    public static void stop() throws IOException {
         executorService.shutdown();
         server.close();
     }
     
-    public static void sendRequest(ServerRequest serverRequest)
-    {
-        executorService.execute(() ->
-        {
-            send(serverRequest);
-        });
+    public static void sendRequest(ServerRequest serverRequest) {
+        executorService.execute(() -> send(serverRequest));
     }
     
-    private static void send(ServerRequest serverRequest)
-    {
-        System.out.println( "[SEND]" );
-        
+    private static void send(ServerRequest serverRequest) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream))
-        {
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
             objectOutputStream.writeObject(serverRequest);
             objectOutputStream.flush();
-            System.out.println( "[WRITE OBJ]" );
             ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
 
             ByteBuffer header = ByteBuffer.allocate(4);
@@ -84,16 +85,12 @@ public class NetClient implements Serializable
                 server.write(byteBuffer);
             }
         }
-        catch (IOException e)
-        {
-            int a = 6;
-            System.out.println( e.getMessage() );
-            // logger.error("Sending message to the server failed!");
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
     
-    private static void listen()
-    {
+    private static void listen() {
         ByteBuffer header = ByteBuffer.allocate(4);
 
         while (true)
@@ -125,8 +122,7 @@ public class NetClient implements Serializable
                     executorService.execute( ()-> handler.accept(response) );
                 }
             }
-            catch (IOException | ClassNotFoundException e)
-            {
+            catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
             data.clear();

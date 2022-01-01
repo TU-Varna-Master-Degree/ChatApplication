@@ -2,7 +2,6 @@ package com.example.myapplication.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -12,49 +11,26 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapplication.NetClient;
 
-import java.io.IOException;
-
 public class MainActivity extends AppCompatActivity
-        implements ActivityResultCallback<ActivityResult>
-   
-{
-    private static final String SERVER_ADDRESS = "95.42.42.125";
-    private static final int SERVER_PORT = 1300;
-    
-    public static final String SERVER_HANDLER = "SERIALIZABLE_SERVER_HANDLER";
-    
+        implements ActivityResultCallback<ActivityResult> {
+
     ActivityResultLauncher<Intent> startForResult;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        
+
         startForResult = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 MainActivity.this);
-        
-        new Thread( () ->
-        {
-            try
-            {
-                // Initialize Connection
-                NetClient.start(SERVER_ADDRESS, SERVER_PORT);
-            }
-            catch(IOException e)
-            {
-                runOnUiThread( () ->
-                {
-                    Toast.makeText(MainActivity.this, "Failed to connect server.", Toast.LENGTH_LONG).show();
-                });
-            }
-            
-        }).start();
-    
-        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        startForResult.launch( intent );
+
+        NetClient.start(super::runOnUiThread, this);
+
+        Intent intent = new Intent(this, LoginActivity.class);
+        startForResult.launch(intent);
     }
-    
+
     @Override
     protected void onDestroy()
     {
@@ -74,17 +50,12 @@ public class MainActivity extends AppCompatActivity
         //
         // }).start();
     }
-    
+
     @Override
-    public void onActivityResult(ActivityResult result)
-    {
-        if(result.getResultCode() == LoginActivity.RESULT_OK)
-        {
-            // GO to home screen
-            Intent intent = new Intent(this, ChatappHomeActivityActivity.class);
-            
-            startActivity( intent );
+    public void onActivityResult(ActivityResult result) {
+        if(result.getResultCode() == LoginActivity.RESULT_OK) {
+            Intent intent = new Intent(this, HomeActivity.class);
+            startForResult.launch(intent);
         }
     }
-
 }

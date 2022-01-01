@@ -4,51 +4,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.ChatappHomeActivityActivity">
+    tools:context=".activities.HomeActivity">
 
-    <EditText
-        android:id="@+id/home_tv_search"
-        android:layout_width="371dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="4dp"
-        android:ems="10"
-        android:hint="search for user"
-        android:inputType="textPersonName"
+    <TextView
+        android:id="@+id/home_search_tv"
+        android:layout_width="265dp"
+        android:layout_height="29dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="30dp"
+        android:paddingTop="3dp"
+        android:text="@string/home_tv_search"
+        android:textSize="16sp"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <SearchView
+        android:id="@+id/home_search"
+        android:layout_width="0dp"
+        android:layout_height="27dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintEnd_toStartOf="@+id/home_search_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </SearchView>
 
     <Spinner
         android:id="@+id/home_cb_filter"
-        android:layout_width="320dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toStartOf="@+id/home_btn_new_group"
-        app:layout_constraintHorizontal_bias="0.869"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_tv_search" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/home_btn_new_group"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="20dp"
-        android:clickable="true"
-        android:rotationX="0"
+        android:layout_width="350dp"
+        android:layout_height="29dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="13dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_tv_search"
-        app:srcCompat="@android:drawable/ic_input_add"
-        app:useCompatPadding="false" />
+        app:layout_constraintHorizontal_bias="0.488"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/home_search" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/home_lst_feed"
-        android:layout_width="375dp"
-        android:layout_height="586dp"
-        android:layout_marginTop="4dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="13dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/home_cb_filter"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/home_cb_filter">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
