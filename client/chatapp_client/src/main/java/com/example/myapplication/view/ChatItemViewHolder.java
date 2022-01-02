@@ -14,8 +14,8 @@ import com.example.myapplication.NetClient;
 import com.example.myapplication.R;
 
 import domain.client.dialogue.ServerRequest;
-import domain.client.dto.GroupMessageDto;
 import domain.client.dto.GroupUserDto;
+import domain.client.dto.MessageDto;
 import domain.client.dto.SendMessageDto;
 import domain.client.enums.MessageType;
 import domain.client.enums.OperationType;
@@ -28,7 +28,7 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
     TextView tvDate, tvTime, tvUsername, tvMessage;
     EditText etMessage;
     
-    GroupMessageDto data = null;
+    MessageDto data = null;
     GroupUserDto user = null;
     
     public ChatItemViewHolder(@NonNull View itemView)
@@ -38,12 +38,17 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
         installEditModeBehaviour();
     }
     
+    private Long impl_detail_todo_refactor(MessageDto msg)
+    {
+        return null; // TODO: Implement
+    }
+    
     private void sendEditRequest(String newContent)
     {
         ServerRequest<SendMessageDto> req = new ServerRequest<>(OperationType.EDIT_NOTIFICATION);
         {
             SendMessageDto sendMessageDto = new SendMessageDto();
-            sendMessageDto.setMessageId( data.getMessageId() );
+            sendMessageDto.setMessageId( impl_detail_todo_refactor(data) );
             sendMessageDto.setMessageType(MessageType.TEXT);
             sendMessageDto.setContent(newContent);
         
@@ -134,10 +139,9 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
     }
     
     @Override
-    public void setMessageContent(GroupMessageDto data)
+    public void setMessageContent(MessageDto data)
     {
         this.data = data;
-        
     }
     
     @Override
