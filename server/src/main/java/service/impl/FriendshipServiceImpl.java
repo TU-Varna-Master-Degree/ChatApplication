@@ -69,6 +69,10 @@ public class FriendshipServiceImpl implements FriendshipService {
 
     @Override
     public ServerResponse<List<FindFriendDto>> findFriends(Long userId, String username) {
+        if (username == null || username.length() == 0) {
+            return new ServerResponse<>(StatusCode.FAILED, "Въведете първо желаното име!");
+        }
+
         List<FindFriendDto> friends = friendshipDao.findFriendByName(userId, username);
         ServerResponse<List<FindFriendDto>> response = new ServerResponse<>(StatusCode.SUCCESSFUL);
         response.setData(friends);
