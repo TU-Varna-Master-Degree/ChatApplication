@@ -35,6 +35,7 @@ import domain.client.dto.FindFriendDto;
 import domain.client.dto.FriendshipDto;
 import domain.client.dto.GroupDto;
 import domain.client.enums.OperationType;
+import domain.client.enums.StatusCode;
 
 public class HomeActivity extends AppCompatActivity
         implements ActivityResultCallback<ActivityResult> {
@@ -95,7 +96,11 @@ public class HomeActivity extends AppCompatActivity
                 Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                 NetClient.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
             } else if (OperationType.FIND_FRIENDS.equals(response.getOperationType())) {
-                loadUsers((List<FindFriendDto>) response.getData());
+                if (StatusCode.FAILED.equals(response.getCode())) {
+                    Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
+                } else if (StatusCode.SUCCESSFUL.equals(response.getCode())) {
+                    loadUsers((List<FindFriendDto>) response.getData());
+                }
             } else if (OperationType.CREATE_FRIENDSHIP.equals(response.getOperationType())) {
                 Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                 if (usersAdapter != null) {
