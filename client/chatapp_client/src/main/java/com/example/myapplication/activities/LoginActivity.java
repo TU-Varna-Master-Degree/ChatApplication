@@ -27,7 +27,6 @@ import domain.client.dialogue.ServerResponse;
 import domain.client.dto.UserDto;
 import domain.client.enums.OperationType;
 import domain.client.enums.StatusCode;
-import domain.entities.User;
 
 
 public class LoginActivity extends AppCompatActivity
@@ -127,8 +126,8 @@ public class LoginActivity extends AppCompatActivity
     @SuppressLint("SetTextI18n")
     private void SetDebugInfo()
     {
-        etUserLoginInput.setText("Gosho");
-        etPassword.setText("1111");
+        etUserLoginInput.setText("nvmcomrade");
+        etPassword.setText("1q2w#E4r5t");
     }
     
     

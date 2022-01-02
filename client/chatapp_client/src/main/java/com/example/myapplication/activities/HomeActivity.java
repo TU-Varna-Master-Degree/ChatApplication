@@ -124,10 +124,11 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void showUserGroupMessages(Long groupId) {
-        //TODO: navigate to user group messages
-//        Intent intent = new Intent(this, T.class);
-//        intent.putExtra("groupId", groupId);
-//        startForResult.launch(intent);
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra(ChatActivity.IN_CHAT_USER_ID, 0); // TODO: GetUserId?
+        intent.putExtra(ChatActivity.IN_CHAT_GROUP_ID, groupId);
+        
+        startForResult.launch(intent);
         System.out.println(groupId);
     }
 
