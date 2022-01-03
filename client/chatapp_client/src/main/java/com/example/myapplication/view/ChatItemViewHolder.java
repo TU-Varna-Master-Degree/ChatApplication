@@ -1,6 +1,9 @@
 package com.example.myapplication.view;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -12,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.NetClient;
 import com.example.myapplication.R;
+
+import java.time.LocalDateTime;
 
 import domain.client.dialogue.ServerRequest;
 import domain.client.dto.GroupUserDto;
@@ -65,10 +70,10 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
             etMessage.setText(tvMessage.getText());
             tvMessage.setVisibility(View.GONE);
             etMessage.requestFocus();
-        
+            
             return true;
         });
-    
+        
         etMessage.setOnFocusChangeListener((view, hasFocus) ->
         {
             if(hasFocus)
@@ -82,9 +87,12 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
                 tvMessage.setText( newContent );
                 sendEditRequest(newContent);
             }
-        
+            
             tvMessage.setVisibility(View.VISIBLE);
             etMessage.setVisibility(View.GONE);
+            
+            InputMethodManager imm = (InputMethodManager) itemView.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         });
     }
     
@@ -106,7 +114,7 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
         
         constraintSet.connect(R.id.chat_item_tv_name, ConstraintSet.LEFT, R.id.chat_item_left, ConstraintSet.END);
         constraintSet.connect(R.id.chat_item_card, ConstraintSet.LEFT, R.id.chat_item_tv_name, ConstraintSet.START);
-        constraintSet.connect(R.id.chat_item_tv_time, ConstraintSet.LEFT, R.id.chat_item_card, ConstraintSet.END);
+        constraintSet.connect(R.id.chat_item_tv_time, ConstraintSet.START, R.id.chat_item_card, ConstraintSet.END);
         constraintSet.applyTo(layout);
     
     }
@@ -138,15 +146,25 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
         tvUsername.setVisibility(View.VISIBLE);
     }
     
+    @SuppressLint("DefaultLocale")
     @Override
     public void setMessageContent(MessageDto data)
     {
         this.data = data;
+        LocalDateTime dt = this.data.getSendDate();
+        tvMessage.setText( this.data.getContent() );
+        tvTime.setText( String.format("%2d:%2d", dt.getHour(), dt.getMinute()) );
+        tvDate.setText( String.format("%2d/%2d/%4d", dt.getDayOfMonth(), dt.getMonthValue(), dt.getYear()) );
+        
+        etMessage.setVisibility(View.GONE);
+        tvTime.setVisibility(View.VISIBLE);
     }
     
     @Override
     public void setMessageUserData(GroupUserDto user)
     {
         this.user = user;
+        tvUsername.setText(user.getUsername());
+        tvUsername.setVisibility(View.VISIBLE);
     }
 }

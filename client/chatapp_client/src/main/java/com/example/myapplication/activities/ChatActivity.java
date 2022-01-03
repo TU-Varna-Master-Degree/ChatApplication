@@ -4,6 +4,7 @@ import static domain.client.enums.OperationType.GROUP_NOTIFICATIONS;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -33,7 +34,7 @@ public class ChatActivity extends AppCompatActivity
     private Long groupId;
     private EditText etMessage;
     private ChatAdapter adapter;
-    
+    RecyclerView lstView;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -47,11 +48,18 @@ public class ChatActivity extends AppCompatActivity
             impl_detail_browse_file();
             return true;
         });
-        
+        etMessage.setOnFocusChangeListener((view, hasFocus)->
+        {
+            if(!hasFocus)
+            {
+                InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(ChatActivity.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        });
         Button btnSend = findViewById(R.id.chat_view_btn_send);
         btnSend.setOnClickListener((view)-> ChatActivity.this.sendMessage() );
     
-        RecyclerView lstView = findViewById(R.id.chat_view_list);
+        lstView = findViewById(R.id.chat_view_list);
         lstView.setLayoutManager(new LinearLayoutManager(this));
         
         // Initialize Navigation
@@ -114,7 +122,7 @@ public class ChatActivity extends AppCompatActivity
     
         ServerRequest<SendMessageDto> request = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
         {
-            SendMessageDto sendMessageDto = impl_detail_content();
+            SendMessageDto sendMessageDto = impl_detail_content_text();
             request.setData(sendMessageDto);
         }
         
@@ -156,6 +164,12 @@ public class ChatActivity extends AppCompatActivity
         
         NotificationDto notifications = response.getData();
         adapter = new ChatAdapter(notifications);
+        runOnUiThread(()->{
+                
+                lstView.setAdapter( adapter );
+                lstView.scrollToPosition(notifications.getMessages().size() - 1);
+        
+        });
     }
     
     void onCreateNotificationResponse(ServerResponse<GroupMessageDto> response)
@@ -164,7 +178,12 @@ public class ChatActivity extends AppCompatActivity
             return;
     
         GroupMessageDto data = response.getData();
-        adapter.insert( data );
+        runOnUiThread(()->
+        {
+            adapter.insert( data );
+            lstView.scrollToPosition(adapter.getItemCount() - 1);
+            etMessage.setText("");
+        });
     }
     
     void onEditNotificationResponse(ServerResponse<GroupMessageDto> response)
@@ -173,7 +192,7 @@ public class ChatActivity extends AppCompatActivity
             return;
         
         GroupMessageDto data = response.getData();
-        adapter.update(data);
+        runOnUiThread(()->adapter.update(data));
     }
     
     private boolean checkResponseStatus(StatusCode code, String errorMessage)
@@ -195,14 +214,11 @@ public class ChatActivity extends AppCompatActivity
     
     private boolean impl_detail_has_valid_message()
     {
-        // TODO: Dimitar Implement
-        assert false;
-        return false;
+        return !etMessage.getText().toString().equals("");
     }
     
-    private SendMessageDto impl_detail_content()
+    private SendMessageDto impl_detail_content_text()
     {
-        assert false;
         String message = etMessage.getText().toString();
         
         SendMessageDto sendMessageDto = new SendMessageDto();

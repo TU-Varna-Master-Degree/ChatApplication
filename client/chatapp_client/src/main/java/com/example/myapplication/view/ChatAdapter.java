@@ -14,8 +14,6 @@ import domain.client.dto.NotificationDto;
 
 public class ChatAdapter extends RecyclerView.Adapter
 {
-    private static final int MESSAGE_INSERT_INDEX = 0;
-    
     final private ChatItemViewHolderFactory factory = new ChatItemViewHolderFactory();
     final private NotificationDto notifications;
     final private List<GroupUserDto> users;
@@ -32,7 +30,7 @@ public class ChatAdapter extends RecyclerView.Adapter
     public int getItemViewType(int position)
     {
         MessageDto msg = messages.get(position);
-        if( impl_detail_cmp_id_with_own(msg) )
+        if( isMessageSentByRecipient(msg) )
         {
             switch(msg.getMessageType())
             {
@@ -95,9 +93,10 @@ public class ChatAdapter extends RecyclerView.Adapter
     public void insert(GroupMessageDto msg)
     {
         MessageDto dto = impl_detail_from_group_msg(msg);
-        messages.add(MESSAGE_INSERT_INDEX, dto);
+    
+        messages.add( dto);
         
-        notifyItemInserted(MESSAGE_INSERT_INDEX);
+        notifyItemInserted(messages.size() - 1);
     }
     
     public void update(GroupMessageDto data)
@@ -115,31 +114,28 @@ public class ChatAdapter extends RecyclerView.Adapter
     
     private MessageDto impl_detail_from_group_msg(GroupMessageDto dto)
     {
-        // TODO: Implement
-        assert false;
-        return null;
+        // TODO: Support file
+        return new MessageDto(
+                dto.getMessageId(),
+                dto.getContent(),
+                dto.getMessageType(),
+                dto.getSendDate(),
+                null,
+                null,
+                null,
+                dto.getUserId(),
+                dto.getUsername(),
+                false);
+                
     }
     
-    private boolean impl_detail_cmp_id_with_own(MessageDto msg)
+    private boolean isMessageSentByRecipient(MessageDto msg)
     {
-        // TODO: Implement
-        assert false;
-        return impl_detail_get_long_id(msg).equals( impl_detail_get_own_id());
+        return msg.isOwner();
     };
     
     private Long impl_detail_get_long_id(MessageDto msg)
     {
-        // TODO: Implement
-        assert false;
-        return null;
+        return msg.getUserId();
     }
-    
-    private Long impl_detail_get_own_id()
-    {
-        // TODO: Implement
-        assert false;
-        return null;
-    }
-    
-    
 }

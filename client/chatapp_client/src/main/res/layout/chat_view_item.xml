@@ -6,7 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
-    android:layout_marginTop="16dp">
+    android:layout_marginTop="16dp"
+    android:clickable="true"
+    android:focusableInTouchMode="true">
 
 
     <TextView
@@ -19,11 +21,13 @@
         android:paddingEnd="8dp"
         android:paddingBottom="4dp"
         android:textColor="#C0C0C0"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="date_stamp" />
+        tools:text="date_stamp"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/chat_item_img_pfp"
@@ -40,9 +44,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textSize="16sp"
+        android:visibility="visible"
         app:layout_constraintTop_toBottomOf="@+id/chat_item_tv_date"
         tools:layout_editor_absoluteX="159dp"
-        tools:text="user_header" />
+        tools:text="user_header"
+        tools:visibility="gone" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/chat_item_card"
@@ -53,6 +59,7 @@
         app:cardElevation="0dp"
         app:cardPreventCornerOverlap="false"
         app:cardUseCompatPadding="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/chat_item_tv_name"
         tools:layout_editor_absoluteX="129dp">
 
@@ -86,7 +93,9 @@
                 android:paddingRight="12dp"
                 android:textColor="#000000"
                 android:textSize="16sp"
-                tools:text="message_editor" />
+                android:visibility="gone"
+                tools:text="message_editor"
+                tools:visibility="visible" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
@@ -95,12 +104,13 @@
         android:id="@+id/chat_item_tv_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
         android:textColor="#C0C0C0"
         android:textSize="10sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:layout_editor_absoluteX="293dp"
-        tools:text="time_stamp" />
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@+id/chat_item_card"
+        tools:layout_editor_absoluteX="285dp"
+        tools:text="time_stamp"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/chat_item_left"
