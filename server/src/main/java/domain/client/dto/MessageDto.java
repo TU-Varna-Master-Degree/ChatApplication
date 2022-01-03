@@ -15,9 +15,12 @@ public class MessageDto implements Serializable {
     private String fileName;
     private String fileType;
     private byte[] file;
+    private Long userId;
+    private String username;
+    private boolean isOwner;
 
-    public MessageDto(Long notificationId, String content, MessageType messageType,
-                      LocalDateTime sendDate, String filePath, String fileName, String fileType) {
+    public MessageDto(Long notificationId, String content, MessageType messageType, LocalDateTime sendDate,
+                      String filePath, String fileName, String fileType, Long userId, String username, Boolean isOwner) {
         this.notificationId = notificationId;
         this.content = content;
         this.messageType = messageType;
@@ -25,6 +28,9 @@ public class MessageDto implements Serializable {
         this.filePath = filePath;
         this.fileName = fileName;
         this.fileType = fileType;
+        this.userId = userId;
+        this.username = username;
+        this.isOwner = isOwner;
     }
 
     public Long getNotificationId() {
@@ -89,5 +95,29 @@ public class MessageDto implements Serializable {
 
     public void setFile(byte[] file) {
         this.file = file;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public boolean isOwner() {
+        return isOwner;
+    }
+
+    public void setOwner(boolean owner) {
+        isOwner = owner;
     }
 }

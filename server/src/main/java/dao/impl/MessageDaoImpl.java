@@ -29,7 +29,10 @@ public class MessageDaoImpl implements MessageDao {
                 "    gn.id.notification.sendDate, " +
                 "    f.filePath," +
                 "    f.fileName," +
-                "    f.fileType) " +
+                "    f.fileType," +
+                "    gn.id.sender.id," +
+                "    gn.id.sender.username," +
+                "    gn.id.sender.id = :userId) " +
                 " FROM GroupNotification gn " +
                 " LEFT OUTER JOIN gn.id.notification.file f" +
                 " WHERE (gn.group.id = :groupId" +
