@@ -56,6 +56,7 @@ public class ChatActivity extends AppCompatActivity
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         });
+        
         Button btnSend = findViewById(R.id.chat_view_btn_send);
         btnSend.setOnClickListener((view)-> ChatActivity.this.sendMessage() );
     
@@ -219,6 +220,7 @@ public class ChatActivity extends AppCompatActivity
     
     private SendMessageDto impl_detail_content_text()
     {
+        // TODO: Dimitar Implement
         String message = etMessage.getText().toString();
         
         SendMessageDto sendMessageDto = new SendMessageDto();

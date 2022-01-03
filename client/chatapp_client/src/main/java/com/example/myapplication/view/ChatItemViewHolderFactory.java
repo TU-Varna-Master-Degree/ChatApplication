@@ -24,6 +24,7 @@ public class ChatItemViewHolderFactory
             case VIEW_TYPE_POV_IMAGE:
             case VIEW_TYPE_POV_FILE:
                 viewHolder.anchorRight();
+                break;
             case VIEW_TYPE_OTHER_FILE:
             case VIEW_TYPE_OTHER_IMAGE:
             case VIEW_TYPE_OTHER_TEXT:

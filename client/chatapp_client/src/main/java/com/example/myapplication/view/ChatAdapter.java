@@ -68,19 +68,8 @@ public class ChatAdapter extends RecyclerView.Adapter
     {
         MessageDto dto = messages.get(position);
         IChatViewDataBinder binder = (IChatViewDataBinder) holder;
-        
-        // Find user
-        for(GroupUserDto obj : users)
-        {
-            if(impl_detail_get_long_id(dto).equals(obj.getId()))
-            {
-                binder.setMessageUserData( obj );
-                break;
-            }
-        }
-
         binder.setMessageContent(dto);
-
+        binder.setUsername(dto.getUsername());
     }
     
     @Override
@@ -93,8 +82,7 @@ public class ChatAdapter extends RecyclerView.Adapter
     public void insert(GroupMessageDto msg)
     {
         MessageDto dto = impl_detail_from_group_msg(msg);
-    
-        messages.add( dto);
+        messages.add( dto );
         
         notifyItemInserted(messages.size() - 1);
     }
@@ -102,19 +90,28 @@ public class ChatAdapter extends RecyclerView.Adapter
     public void update(GroupMessageDto data)
     {
         int index = impl_detail_find_and_update_message_list(data);
+        if(index == -1)
+            return;
         notifyItemChanged(index);
     }
     
     private int impl_detail_find_and_update_message_list(GroupMessageDto dto)
     {
-        // TODO: Implement
-        assert false;
-        return 0;
+        for(int i = 0; i < messages.size(); i++)
+        {
+            MessageDto msg = messages.get(i);
+            if(msg.getNotificationId().equals(dto.getMessageId()))
+            {
+                msg.setContent( dto.getContent() );
+                return i;
+            }
+        }
+        
+        return -1;
     }
     
     private MessageDto impl_detail_from_group_msg(GroupMessageDto dto)
     {
-        // TODO: Support file
         return new MessageDto(
                 dto.getMessageId(),
                 dto.getContent(),
@@ -125,7 +122,7 @@ public class ChatAdapter extends RecyclerView.Adapter
                 null,
                 dto.getUserId(),
                 dto.getUsername(),
-                false);
+                true);
                 
     }
     
@@ -134,8 +131,4 @@ public class ChatAdapter extends RecyclerView.Adapter
         return msg.isOwner();
     };
     
-    private Long impl_detail_get_long_id(MessageDto msg)
-    {
-        return msg.getUserId();
-    }
 }
