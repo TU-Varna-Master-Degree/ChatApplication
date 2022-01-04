@@ -1,4 +1,4 @@
-package com.example.myapplication.view;
+package com.example.myapplication.adapters;
 
 import android.view.ViewGroup;
 
@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import domain.client.dto.GroupMessageDto;
 import domain.client.dto.GroupUserDto;
 import domain.client.dto.MessageDto;
 import domain.client.dto.NotificationDto;
@@ -67,9 +66,13 @@ public class ChatAdapter extends RecyclerView.Adapter
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
         MessageDto dto = messages.get(position);
-        IChatViewDataBinder binder = (IChatViewDataBinder) holder;
+        ChatViewDataBinder binder = (ChatViewDataBinder) holder;
         binder.setMessageContent(dto);
         binder.setUsername(dto.getUsername());
+
+        if (dto.isOwner()) {
+            binder.installEditModeBehaviour();
+        }
     }
     
     @Override
@@ -79,15 +82,13 @@ public class ChatAdapter extends RecyclerView.Adapter
     }
     
     
-    public void insert(GroupMessageDto msg)
+    public void insert(MessageDto msg)
     {
-        MessageDto dto = impl_detail_from_group_msg(msg);
-        messages.add( dto );
-        
+        messages.add( msg );
         notifyItemInserted(messages.size() - 1);
     }
     
-    public void update(GroupMessageDto data)
+    public void update(MessageDto data)
     {
         int index = impl_detail_find_and_update_message_list(data);
         if(index == -1)
@@ -95,35 +96,19 @@ public class ChatAdapter extends RecyclerView.Adapter
         notifyItemChanged(index);
     }
     
-    private int impl_detail_find_and_update_message_list(GroupMessageDto dto)
+    private int impl_detail_find_and_update_message_list(MessageDto dto)
     {
         for(int i = 0; i < messages.size(); i++)
         {
             MessageDto msg = messages.get(i);
-            if(msg.getNotificationId().equals(dto.getMessageId()))
+            if(msg.getNotificationId().equals(dto.getNotificationId()))
             {
                 msg.setContent( dto.getContent() );
                 return i;
             }
         }
-        
+
         return -1;
-    }
-    
-    private MessageDto impl_detail_from_group_msg(GroupMessageDto dto)
-    {
-        return new MessageDto(
-                dto.getMessageId(),
-                dto.getContent(),
-                dto.getMessageType(),
-                dto.getSendDate(),
-                null,
-                null,
-                null,
-                dto.getUserId(),
-                dto.getUsername(),
-                true);
-                
     }
     
     private boolean isMessageSentByRecipient(MessageDto msg)

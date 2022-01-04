@@ -1,4 +1,4 @@
-package com.example.myapplication.view;
+package com.example.myapplication.adapters;
 
 public enum ChatItemViewType
 {

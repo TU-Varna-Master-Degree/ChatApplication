@@ -18,9 +18,13 @@ public class MessageDto implements Serializable {
     private Long userId;
     private String username;
     private boolean isOwner;
+    private Long groupId;
 
-    public MessageDto(Long notificationId, String content, MessageType messageType, LocalDateTime sendDate,
-                      String filePath, String fileName, String fileType, Long userId, String username, Boolean isOwner) {
+    public MessageDto() {
+    }
+
+    public MessageDto(Long notificationId, String content, MessageType messageType, LocalDateTime sendDate, String filePath,
+                      String fileName, String fileType, Long userId, String username, Boolean isOwner, Long groupId) {
         this.notificationId = notificationId;
         this.content = content;
         this.messageType = messageType;
@@ -31,6 +35,7 @@ public class MessageDto implements Serializable {
         this.userId = userId;
         this.username = username;
         this.isOwner = isOwner;
+        this.groupId = groupId;
     }
 
     public Long getNotificationId() {
@@ -119,5 +124,13 @@ public class MessageDto implements Serializable {
 
     public void setOwner(boolean owner) {
         isOwner = owner;
+    }
+
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
     }
 }

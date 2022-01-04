@@ -1,4 +1,4 @@
-package com.example.myapplication.view;
+package com.example.myapplication.holders;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -13,8 +13,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.NetClient;
+import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
+import com.example.myapplication.adapters.ChatViewDataBinder;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +26,7 @@ import domain.client.enums.MessageType;
 import domain.client.enums.OperationType;
 
 public class ChatItemViewHolder extends RecyclerView.ViewHolder
-    implements IChatViewDataBinder
+    implements ChatViewDataBinder
 {
     ConstraintLayout layout;
     ImageView imgPFPAnchor;
@@ -38,7 +39,6 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
     {
         super(itemView);
         bindViews(itemView);
-        installEditModeBehaviour();
     }
     
     private void sendEditRequest(String newContent)
@@ -54,8 +54,9 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
         }
         NetClient.sendRequest(req);
     }
-    
-    private void installEditModeBehaviour()
+
+    @Override
+    public void installEditModeBehaviour()
     {
         tvMessage.setOnLongClickListener(view ->
         {

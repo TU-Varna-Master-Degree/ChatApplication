@@ -83,7 +83,7 @@ public class GroupServiceImpl implements GroupService {
         LocalDateTime creationDateTime = LocalDateTime.now();
 
         if (group.getUserGroups().stream().noneMatch(u -> u.getId().getUser().getId().equals(userId))) {
-            return new ServerResponse(StatusCode.FAILED, "Не сте част от групата!");
+            return new ServerResponse(StatusCode.FAILED, "You are not part of the group!");
         }
 
         if (group.getUserGroups().size() == 2) {
@@ -109,7 +109,7 @@ public class GroupServiceImpl implements GroupService {
         addUsersToGroup(group, users, creationDateTime);
         groupDao.save(group);
 
-        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "Успешно добавихте новите членове на групата!");
+        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "You have successfully added the new members of the group!");
         response.setData(group.getId());
         return response;
     }

@@ -32,7 +32,8 @@ public class MessageDaoImpl implements MessageDao {
                 "    f.fileType," +
                 "    gn.id.sender.id," +
                 "    gn.id.sender.username," +
-                "    gn.id.sender.id = :userId) " +
+                "    gn.id.sender.id = :userId," +
+                "    gn.group.id) " +
                 " FROM GroupNotification gn " +
                 " LEFT OUTER JOIN gn.id.notification.file f" +
                 " WHERE (gn.group.id = :groupId" +
@@ -47,7 +48,7 @@ public class MessageDaoImpl implements MessageDao {
                 "         FROM UserGroup ug" +
                 "        WHERE ug.id.user.id = :userId" +
                 "         AND ug.id.group.id = :groupId)" +
-                " ORDER BY gn.id.notification.sendDate DESC";
+                " ORDER BY gn.id.notification.sendDate";
 
         Query query = entityManager.createQuery(sql);
         query.setParameter("userId", userId);

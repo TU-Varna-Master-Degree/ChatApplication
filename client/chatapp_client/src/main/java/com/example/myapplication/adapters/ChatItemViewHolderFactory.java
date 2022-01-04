@@ -1,4 +1,4 @@
-package com.example.myapplication.view;
+package com.example.myapplication.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.holders.ChatItemViewHolder;
 
 public class ChatItemViewHolderFactory
 {

@@ -15,10 +15,13 @@
     <string name="reg_btn_exit">Изход</string>
     <string name="login_tv_username"> Потребителско Име/Е-майл Адрес </string>
     <string name="login_tv_password"> Парола </string>
-    <string name="login_et_username"> пример myemail@gmail.com </string>
+    <string name="login_et_username"> пример myusername12 </string>
     <string name="login_btn_login"> Вход </string>
     <string name="login_tv_register"> <u>Нямате акаунт? Регистрирайте се сега.</u></string>
     <string name="login_chb_remember"> Запомни ме </string>
     <string name="home_tv_search"> Намери нови приятели </string>
     <string name="home_btn_new_friendship"> Добави </string>
+    <string name="add_friend_to_chat"> Добави приятел към груповия чат </string>
+    <string name="add_friend_ok_btn">Добави</string>
+    <string name="add_friend_cancel_btn">Затвори</string>
 </resources>

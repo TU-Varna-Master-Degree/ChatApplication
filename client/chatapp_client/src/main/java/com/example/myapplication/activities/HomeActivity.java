@@ -21,11 +21,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.NetClient;
+import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
-import com.example.myapplication.view.FriendshipAdapter;
-import com.example.myapplication.view.GroupAdapter;
-import com.example.myapplication.view.UserAdapter;
+import com.example.myapplication.adapters.FriendshipAdapter;
+import com.example.myapplication.adapters.GroupAdapter;
+import com.example.myapplication.adapters.UserAdapter;
 
 import java.util.List;
 

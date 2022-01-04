@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name"> Chat Application </string>
-    <string name="login_activity_name">Login</string>
     <string name="reg_btn_exit">" Exit"</string>
     <string name="reg_btn_register"> Register </string>
     <string name="reg_tv_username"> Username </string>
@@ -12,13 +11,22 @@
     <string name="reg_et_pw"> type your password here </string>
     <string name="reg_et_pw_confirm"> re-type password </string>
     <string name="reg_tv_form_name"> Register </string>
+    <string name="reg_error_username">Username should be at least 5 symbols.</string>
+    <string name="reg_error_password">Password should be at least 3 symbols.</string>
+    <string name="reg_error_conf_password">Passwords do not match.</string>
+    <string name="reg_error_email">Invalid email address.</string>
+    <string name="login_activity_name">Login</string>
     <string name="login_tv_username"> Username/Email </string>
     <string name="login_tv_password"> Password </string>
-    <string name="login_et_username"> e.g myemail@gmail.com </string>
+    <string name="login_et_username"> e.g myusername12 </string>
     <string name="login_btn_login"> Login </string>
     <string name="login_tv_register"> <u>Don\'t have an account? Signup</u> </string>
     <string name="login_chb_remember"> Remember me </string>
+    <string name="login_error_username">Username should be at least 5 symbols.</string>
+    <string name="login_error_password">Password should be at least 3 symbols.</string>
     <string name="home_tv_search"> Find new friends </string>
     <string name="home_btn_new_friendship"> Add </string>
-    <string name="add_friend_to_chat">Add Friend to group chat</string>
+    <string name="add_friend_to_chat">Add friend to group chat</string>
+    <string name="add_friend_ok_btn">Add</string>
+    <string name="add_friend_cancel_btn">Cancel</string>
 </resources>

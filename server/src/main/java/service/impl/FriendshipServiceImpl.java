@@ -38,11 +38,11 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Override
     public ServerResponse createFriendship(Long senderId, Long receiverId) {
         if (friendshipDao.getFriendship(senderId, receiverId) != null) {
-            return new ServerResponse(StatusCode.FAILED, "Приятелската заявка вече съществува!");
+            return new ServerResponse(StatusCode.FAILED, "Friendship request already exists!");
         }
 
         friendshipDao.createFriendship(senderId, receiverId);
-        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "Приятелската заявка беше успешно създадена!");
+        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "Friendship request was successfully created!");
         response.setData(receiverId);
         return response;
     }
@@ -53,12 +53,12 @@ public class FriendshipServiceImpl implements FriendshipService {
         Friendship friendship = friendshipDao.getFriendship(senderId, receiverId);
 
         if (friendship == null) {
-            return new ServerResponse(StatusCode.FAILED, "Приятелската връзка не съществува!");
+            return new ServerResponse(StatusCode.FAILED, "Friendship does not exist!");
         }
 
         friendshipDao.changeFriendshipState(friendship, updateFriendshipDto.getFriendshipState());
 
-        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "Успешно променихте състоянието на приятелската връзка!");
+        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "You have successfully changed the status of the friendship!");
         if (updateFriendshipDto.getFriendshipState().equals(FriendshipState.ACCEPTED)) {
             Group group = groupService.createUserGroup(Arrays.asList(friendship.getId().getReceiver(), friendship.getId().getSender()));
             response.setData(group.getId());
@@ -70,7 +70,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Override
     public ServerResponse<List<FindFriendDto>> findFriends(Long userId, String username) {
         if (username == null || username.length() == 0) {
-            return new ServerResponse<>(StatusCode.FAILED, "Въведете първо желаното име!");
+            return new ServerResponse<>(StatusCode.FAILED, "Enter the desired username first!");
         }
 
         List<FindFriendDto> friends = friendshipDao.findFriendByName(userId, username);

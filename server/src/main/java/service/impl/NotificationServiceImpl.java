@@ -45,7 +45,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public ServerResponse getGroupNotifications(Long userId, Long groupId) {
         if (!groupDao.isUserParticipateInGroup(userId, groupId)) {
-            return new ServerResponse(StatusCode.FAILED, "Не сте включен в групата!");
+            return new ServerResponse(StatusCode.FAILED, "You are not part of the group!");
         }
 
         List<MessageDto> messages = messageDao.getGroupMessages(userId, groupId);
@@ -55,7 +55,7 @@ public class NotificationServiceImpl implements NotificationService {
                 try {
                     m.setFile(Files.readAllBytes(Paths.get(m.getFilePath())));
                 } catch (IOException ex) {
-                    m.setFile("Грешка с прочитането на файла!".getBytes());
+                    m.setFile("Problem appeared while reading a file!".getBytes());
                 }
             });
 
@@ -74,11 +74,11 @@ public class NotificationServiceImpl implements NotificationService {
     public ServerResponse createMessage(Long userId, SendMessageDto sendMessageDto) {
         Group group = groupDao.getById(sendMessageDto.getGroupId());
         if (group == null) {
-            return new ServerResponse(StatusCode.FAILED, "Не беше намерена такава група!");
+            return new ServerResponse(StatusCode.FAILED, "The group wasn't found!");
         }
 
         if (!groupDao.isUserParticipateInGroup(userId, sendMessageDto.getGroupId())) {
-            return new ServerResponse(StatusCode.FAILED, "Не сте част от тази група!");
+            return new ServerResponse(StatusCode.FAILED, "You are not part of the group!");
         }
 
         Notification notification = new Notification();
@@ -90,7 +90,7 @@ public class NotificationServiceImpl implements NotificationService {
             try {
                 filePath = saveFile(sendMessageDto.getFile(), sendMessageDto.getFileType());
             } catch (IOException e) {
-                return new ServerResponse(StatusCode.FAILED, "Проблем със създаването на файла.");
+                return new ServerResponse(StatusCode.FAILED, "Problem appeared while creating the file.");
             }
 
             ChatFile chatFile = new ChatFile();
@@ -113,19 +113,19 @@ public class NotificationServiceImpl implements NotificationService {
         groupNotification.setGroup(group);
         messageDao.saveGroupNotification(groupNotification);
 
-        GroupMessageDto groupMessageDto = new GroupMessageDto();
-        groupMessageDto.setMessageId(notification.getId());
-        groupMessageDto.setGroupId(group.getId());
-        groupMessageDto.setMessageType(notification.getMessageType());
-        groupMessageDto.setContent(notification.getContent());
-        groupMessageDto.setSendDate(notification.getSendDate());
-        groupMessageDto.setUserId(groupNotificationId.getSender().getId());
-        groupMessageDto.setUsername(groupNotificationId.getSender().getUsername());
-        saveFileToDto(sendMessageDto, notification, groupMessageDto);
+        MessageDto messageDto = new MessageDto();
+        messageDto.setNotificationId(notification.getId());
+        messageDto.setGroupId(group.getId());
+        messageDto.setMessageType(notification.getMessageType());
+        messageDto.setContent(notification.getContent());
+        messageDto.setSendDate(notification.getSendDate());
+        messageDto.setUserId(groupNotificationId.getSender().getId());
+        messageDto.setUsername(groupNotificationId.getSender().getUsername());
+        saveFileToDto(sendMessageDto, notification, messageDto);
 
-        ServerResponse<GroupMessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
+        ServerResponse<MessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
         serverResponse.setOperationType(OperationType.CREATE_NOTIFICATION);
-        serverResponse.setData(groupMessageDto);
+        serverResponse.setData(messageDto);
 
         sendNotificationsToGroup(group.getUserGroups(), serverResponse);
         return new ServerResponse(StatusCode.EMPTY);
@@ -136,7 +136,7 @@ public class NotificationServiceImpl implements NotificationService {
         GroupNotification groupNotification = messageDao.getGroupNotificationById(userId, sendMessageDto.getMessageId());
 
         if (groupNotification == null) {
-            return new ServerResponse(StatusCode.FAILED, "Съобщението не е открито!");
+            return new ServerResponse(StatusCode.FAILED, "The message wasn't found!");
         }
 
         Notification notification = groupNotification.getId().getNotification();
@@ -147,7 +147,7 @@ public class NotificationServiceImpl implements NotificationService {
             try {
                 filePath = saveFile(sendMessageDto.getFile(), sendMessageDto.getFileType());
             } catch (IOException e) {
-                return new ServerResponse(StatusCode.FAILED, "Проблем със създаването на файла.");
+                return new ServerResponse(StatusCode.FAILED, "Problem appeared while creating the file.");
             }
 
             ChatFile chatFile = notification.getFile();
@@ -183,19 +183,19 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        GroupMessageDto groupMessageDto = new GroupMessageDto();
-        groupMessageDto.setMessageId(notification.getId());
-        groupMessageDto.setGroupId(groupNotification.getGroup().getId());
-        groupMessageDto.setMessageType(notification.getMessageType());
-        groupMessageDto.setContent(notification.getContent());
-        groupMessageDto.setSendDate(notification.getSendDate());
-        groupMessageDto.setUserId(groupNotification.getId().getSender().getId());
-        groupMessageDto.setUsername(groupNotification.getId().getSender().getUsername());
-        saveFileToDto(sendMessageDto, notification, groupMessageDto);
+        MessageDto messageDto = new MessageDto();
+        messageDto.setNotificationId(notification.getId());
+        messageDto.setGroupId(groupNotification.getGroup().getId());
+        messageDto.setMessageType(notification.getMessageType());
+        messageDto.setContent(notification.getContent());
+        messageDto.setSendDate(notification.getSendDate());
+        messageDto.setUserId(groupNotification.getId().getSender().getId());
+        messageDto.setUsername(groupNotification.getId().getSender().getUsername());
+        saveFileToDto(sendMessageDto, notification, messageDto);
 
-        ServerResponse<GroupMessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
+        ServerResponse<MessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
         serverResponse.setOperationType(OperationType.EDIT_NOTIFICATION);
-        serverResponse.setData(groupMessageDto);
+        serverResponse.setData(messageDto);
 
         sendNotificationsToGroup(groupNotification.getGroup().getUserGroups(), serverResponse);
         return new ServerResponse(StatusCode.EMPTY);
@@ -220,18 +220,20 @@ public class NotificationServiceImpl implements NotificationService {
         return absolutePath.toString();
     }
 
-    private void saveFileToDto(SendMessageDto sendMessageDto, Notification notification, GroupMessageDto groupMessageDto) {
+    private void saveFileToDto(SendMessageDto sendMessageDto, Notification notification, MessageDto messageDto) {
         if (notification.getMessageType().equals(MessageType.FILE)) {
-            groupMessageDto.setFileType(notification.getFile().getFileType());
-            groupMessageDto.setFileName(notification.getFile().getFileName());
-            groupMessageDto.setFile(sendMessageDto.getFile());
+            messageDto.setFileType(notification.getFile().getFileType());
+            messageDto.setFileName(notification.getFile().getFileName());
+            messageDto.setFile(sendMessageDto.getFile());
         }
     }
 
-    private void sendNotificationsToGroup(List<UserGroup> userGroups, ServerResponse<GroupMessageDto> serverResponse) {
+    private void sendNotificationsToGroup(List<UserGroup> userGroups, ServerResponse<MessageDto> serverResponse) {
         userGroups.forEach(ug -> {
             SocketChannel channel = sessionService.getChannelById(ug.getId().getUser().getId());
             if (channel != null) {
+                MessageDto messageDto = serverResponse.getData();
+                messageDto.setOwner(messageDto.getUserId().equals(ug.getId().getUser().getId()));
                 sendResponse(channel, serverResponse);
             }
         });

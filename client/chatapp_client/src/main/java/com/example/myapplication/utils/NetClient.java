@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.utils;
 
 import android.content.Context;
 import android.widget.Toast;
@@ -20,14 +20,14 @@ import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
 
 public class NetClient {
-    
+
     private static final String SERVER_ADDRESS = "95.42.42.125";
     private static final int SERVER_PORT = 1300;
-    
+
     private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private static SocketChannel server;
     private static final ArrayList<Consumer<ServerResponse>> handlerList = new ArrayList<>();
-    
+
     public static void register(Consumer<ServerResponse> handler) {
         handlerList.add(handler);
     }
@@ -68,14 +68,14 @@ public class NetClient {
             objectOutputStream.writeObject(serverRequest);
             objectOutputStream.flush();
             ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
-            
+
             ByteBuffer header = ByteBuffer.allocate(4);
             header.putInt(byteBuffer.limit());
             header.flip();
             while (header.hasRemaining()) {
                 server.write(header);
             }
-            
+
             while (byteBuffer.hasRemaining()) {
                 server.write(byteBuffer);
             }
@@ -87,22 +87,22 @@ public class NetClient {
     
     private static void listen() {
         ByteBuffer header = ByteBuffer.allocate(4);
-        
+
         while (true)
         {
             header.clear();
             if (!readFromServer(header, server)) {
                 return;
             }
-            
+
             header.flip();
             int length = header.getInt();
-            
+
             ByteBuffer data = ByteBuffer.allocate(length);
             if (!readFromServer(data, server)) {
                 return;
             }
-            
+
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data.array());
                  ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream))
             {
@@ -123,7 +123,7 @@ public class NetClient {
             data.clear();
         }
     }
-    
+
     private static boolean readFromServer(ByteBuffer data, SocketChannel channel) {
         try {
             while (data.hasRemaining()) {
@@ -136,10 +136,10 @@ public class NetClient {
             System.out.println("Unable to read from server!");
             return false;
         }
-        
+
         return true;
     }
-    
+
     private static void closeChannel(SocketChannel channel) {
         try {
             channel.close();

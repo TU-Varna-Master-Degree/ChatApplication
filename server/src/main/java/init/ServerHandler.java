@@ -2,10 +2,7 @@ package init;
 
 import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
-import domain.client.dto.GroupMessageDto;
-import domain.client.dto.SendMessageDto;
 import domain.client.dto.UserDto;
-import domain.client.enums.MessageType;
 import domain.client.enums.OperationType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,11 +10,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
