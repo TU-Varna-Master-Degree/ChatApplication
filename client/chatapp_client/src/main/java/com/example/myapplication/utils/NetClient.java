@@ -1,8 +1,5 @@
 package com.example.myapplication.utils;
 
-import android.content.Context;
-import android.widget.Toast;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,50 +16,47 @@ import java.util.function.Consumer;
 import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
 
-public class NetClient {
-
-    private static final String SERVER_ADDRESS = "95.42.42.125";
-    private static final int SERVER_PORT = 1300;
-
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(2);
+public class NetClient
+{
+    private final ArrayList<Consumer<ServerResponse>> handlerList = new ArrayList<>();
+    
+    private final String ipAddress;
+    private final int serverPort;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
     private static SocketChannel server;
-    private static final ArrayList<Consumer<ServerResponse>> handlerList = new ArrayList<>();
-
-    public static void register(Consumer<ServerResponse> handler) {
-        handlerList.add(handler);
+    
+    public NetClient(String ipAddress, int serverPort)
+    {
+        this.ipAddress = ipAddress;
+        this.serverPort = serverPort;
     }
     
-    public static void unregister(Consumer<ServerResponse> handler) {
-        handlerList.remove(handler);
-    }
-    
-    public boolean isRunning() {
-        return server.isOpen();
-    }
-    
-    public static void start(Consumer<Runnable> runOnUiThread, Context context) {
+    public void start() {
         executorService.execute(() -> {
             try {
-                server = SocketChannel.open(new InetSocketAddress(SERVER_ADDRESS, SERVER_PORT));
-                NetClient.listen();
+                server = SocketChannel.open(new InetSocketAddress(ipAddress, serverPort));
+                NetClient.this.listen();
             } catch (IOException e) {
-                runOnUiThread.accept(() -> {
-                    Toast.makeText(context, "Failed to connect server.", Toast.LENGTH_LONG).show();
-                });
+                System.out.println("Failed to connect to server");
             }
         });
     }
     
-    public static void stop() throws IOException {
+    public boolean isRunning()
+    {
+        return server.isOpen();
+    }
+    
+    public void stop() throws IOException {
         executorService.shutdown();
         server.close();
     }
     
-    public static void sendRequest(ServerRequest serverRequest) {
+    public void sendRequest(ServerRequest serverRequest) {
         executorService.execute(() -> send(serverRequest));
     }
     
-    private static void send(ServerRequest serverRequest) {
+    private void send(ServerRequest serverRequest) {
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
             objectOutputStream.writeObject(serverRequest);
@@ -85,7 +79,7 @@ public class NetClient {
         }
     }
     
-    private static void listen() {
+    private void listen() {
         ByteBuffer header = ByteBuffer.allocate(4);
 
         while (true)
@@ -124,7 +118,7 @@ public class NetClient {
         }
     }
 
-    private static boolean readFromServer(ByteBuffer data, SocketChannel channel) {
+    private boolean readFromServer(ByteBuffer data, SocketChannel channel) {
         try {
             while (data.hasRemaining()) {
                 if (channel.read(data) == -1) {
@@ -139,8 +133,16 @@ public class NetClient {
 
         return true;
     }
-
-    private static void closeChannel(SocketChannel channel) {
+    
+    public void register(Consumer<ServerResponse> handler) {
+        handlerList.add(handler);
+    }
+    
+    public void unregister(Consumer<ServerResponse> handler) {
+        handlerList.remove(handler);
+    }
+    
+    private void closeChannel(SocketChannel channel) {
         try {
             channel.close();
             System.out.println("Server channel closed!");

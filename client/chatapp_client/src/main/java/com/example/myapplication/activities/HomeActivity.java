@@ -21,11 +21,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.utils.NetClient;
+import com.example.myapplication.ChatApplication;
 import com.example.myapplication.R;
 import com.example.myapplication.adapters.FriendshipAdapter;
 import com.example.myapplication.adapters.GroupAdapter;
 import com.example.myapplication.adapters.UserAdapter;
+import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
 
@@ -47,12 +48,16 @@ public class HomeActivity extends AppCompatActivity
     private UserAdapter usersAdapter;
     private ActivityResultLauncher<Intent> startForResult;
 
+    private NetClient client;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chatapp_home_activity);
-
+        
+        client = client = ((ChatApplication) getApplication()).getNetClient();
+        
         searchView = findViewById(R.id.home_search);
         searchViewText = findViewById(R.id.home_search_tv);
         view = findViewById(R.id.home_lst_feed);
@@ -77,13 +82,13 @@ public class HomeActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        NetClient.register(this::onServerResponse);
+        client.register(this::onServerResponse);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        NetClient.unregister(this::onServerResponse);
+        client.unregister(this::onServerResponse);
     }
 
     private void onServerResponse(ServerResponse response) {
@@ -94,7 +99,7 @@ public class HomeActivity extends AppCompatActivity
                 loadFriends((List<FriendshipDto>) response.getData());
             } else if (OperationType.UPDATE_FRIENDSHIP.equals(response.getOperationType())) {
                 Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
-                NetClient.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
+                client.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
             } else if (OperationType.FIND_FRIENDS.equals(response.getOperationType())) {
                 if (StatusCode.FAILED.equals(response.getCode())) {
                     Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
@@ -117,13 +122,13 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private void loadFriends(List<FriendshipDto> friendships) {
-        FriendshipAdapter listAdapter = new FriendshipAdapter(friendships, this::showUserGroupMessages);
+        FriendshipAdapter listAdapter = new FriendshipAdapter(client, friendships, this::showUserGroupMessages);
         view.setLayoutManager(new LinearLayoutManager(this));
         view.setAdapter(listAdapter);
     }
 
     private void loadUsers(List<FindFriendDto> users) {
-        usersAdapter = new UserAdapter(users);
+        usersAdapter = new UserAdapter(users, client);
         view.setLayoutManager(new LinearLayoutManager(this));
         view.setAdapter(usersAdapter);
     }
@@ -159,7 +164,7 @@ public class HomeActivity extends AppCompatActivity
 
             ServerRequest<String> request = new ServerRequest<>(OperationType.FIND_FRIENDS);
             request.setData(s);
-            NetClient.sendRequest(request);
+            client.sendRequest(request);
             return true;
         }
 
@@ -172,9 +177,9 @@ public class HomeActivity extends AppCompatActivity
     private void sendCbViewRequest(View view) {
         String text = ((TextView) view).getText().toString();
         if (text.equals("Groups")) {
-            NetClient.sendRequest(new ServerRequest<>(OperationType.USER_GROUPS));
+            client.sendRequest(new ServerRequest<>(OperationType.USER_GROUPS));
         } else if (text.equals("Friends")) {
-            NetClient.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
+            client.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
         }
     }
 

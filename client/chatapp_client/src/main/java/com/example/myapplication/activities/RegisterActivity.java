@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.myapplication.ChatApplication;
 import com.example.myapplication.utils.FormRules;
 import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
@@ -37,12 +38,15 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView tvConfPasswordError;
 
     private FormRules[] rules;
-
+    private NetClient client ;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register_activity);
-
+    
+        client = ((ChatApplication) getApplication()).getNetClient();
+        
         etUsername = findViewById(R.id.reg_et_username);
         etEmail = findViewById(R.id.reg_et_email);
         etPassword = findViewById(R.id.reg_et_pw);
@@ -57,14 +61,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_reg_confirm)
                 .setOnClickListener(view -> DoRegister());
-
-        if (savedInstanceState != null) {
-            etUsername.setText(savedInstanceState.getString(REGISTER_USER_NAME));
-            etEmail.setText(savedInstanceState.getString(REGISTER_EMAIL));
-            etPassword.setText(savedInstanceState.getString(REGISTER_PASSWORD));
-            etConfirmPassword.setText(savedInstanceState.getString(REGISTER_CONFIRM_PASSWORD));
-        }
-
+        
         if (Debug.isDebuggerConnected()) {
             SetDebugInfo();
         }
@@ -89,17 +86,26 @@ public class RegisterActivity extends AppCompatActivity {
         outState.putString(REGISTER_PASSWORD, etPassword.getText().toString());
         outState.putString(REGISTER_CONFIRM_PASSWORD, etConfirmPassword.getText().toString());
     }
+    
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        etUsername.setText(outState.getString(REGISTER_USER_NAME));
+        etEmail.setText(outState.getString(REGISTER_EMAIL));
+        etPassword.setText(outState.getString(REGISTER_PASSWORD));
+        etConfirmPassword.setText(outState.getString(REGISTER_CONFIRM_PASSWORD));
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        NetClient.register(this::onServerResponse);
+        client.register(this::onServerResponse);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        NetClient.unregister(this::onServerResponse);
+        client.unregister(this::onServerResponse);
     }
 
     @SuppressLint("SetTextI18n")
@@ -156,7 +162,7 @@ public class RegisterActivity extends AppCompatActivity {
                 new domain.client.dialogue.ServerRequest<>(OperationType.USER_REGISTER);
         request.setData(user);
 
-        NetClient.sendRequest(request);
+        client.sendRequest(request);
     }
 
     public void onServerResponse(ServerResponse response) {

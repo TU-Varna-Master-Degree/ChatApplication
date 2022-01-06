@@ -9,21 +9,27 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.holders.FriendshipViewHolder;
+import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
 import java.util.function.Consumer;
 
+import domain.client.dialogue.ServerRequest;
 import domain.client.dto.FriendshipDto;
+import domain.client.dto.UpdateFriendshipDto;
 import domain.client.enums.FriendshipState;
+import domain.client.enums.OperationType;
 
 public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipViewHolder> {
 
     final private List<FriendshipDto> data;
     final private Consumer<Long> showMessages;
-
-    public FriendshipAdapter(List<FriendshipDto> data, Consumer<Long> showMessages) {
+    final private NetClient client;
+    
+    public FriendshipAdapter(NetClient client ,List<FriendshipDto> data, Consumer<Long> showMessages) {
         this.data = data;
         this.showMessages = showMessages;
+        this.client = client;
     }
 
     @NonNull
@@ -43,8 +49,16 @@ public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipViewHolder
         if (FriendshipState.ACCEPTED.equals(friendship.getState())) {
             holder.itemView.setOnClickListener((v) -> showMessages.accept(friendship.getGroupId()));
         } else {
-            holder.setReceiverId(friendship.getSenderId());
-            holder.showButtons();
+            holder.showButtons((newState)-> {
+                ServerRequest<UpdateFriendshipDto> request = new ServerRequest<>(OperationType.UPDATE_FRIENDSHIP);
+                {
+                    UpdateFriendshipDto updateFriendshipDto = new UpdateFriendshipDto();
+                    updateFriendshipDto.setReceiverId(friendship.getSenderId());
+                    updateFriendshipDto.setFriendshipState(newState);
+                    request.setData(updateFriendshipDto);
+                }
+                client.sendRequest(request);
+            });
         }
     }
 
@@ -52,4 +66,5 @@ public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipViewHolder
     public int getItemCount() {
         return data.size();
     }
+
 }

@@ -13,17 +13,13 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
 import com.example.myapplication.adapters.ChatViewDataBinder;
 
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
-import domain.client.dialogue.ServerRequest;
 import domain.client.dto.MessageDto;
-import domain.client.dto.SendMessageDto;
-import domain.client.enums.MessageType;
-import domain.client.enums.OperationType;
 
 public class ChatItemViewHolder extends RecyclerView.ViewHolder
     implements ChatViewDataBinder
@@ -41,22 +37,8 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
         bindViews(itemView);
     }
     
-    private void sendEditRequest(String newContent)
-    {
-        ServerRequest<SendMessageDto> req = new ServerRequest<>(OperationType.EDIT_NOTIFICATION);
-        {
-            SendMessageDto sendMessageDto = new SendMessageDto();
-            sendMessageDto.setMessageId( data.getNotificationId() );
-            sendMessageDto.setMessageType(MessageType.TEXT);
-            sendMessageDto.setContent(newContent);
-        
-            req.setData(sendMessageDto);
-        }
-        NetClient.sendRequest(req);
-    }
-
     @Override
-    public void installEditModeBehaviour()
+    public void installEditModeBehaviour(Consumer<String> editChange )
     {
         tvMessage.setOnLongClickListener(view ->
         {
@@ -73,7 +55,7 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
             }
             else
             {
-                closeEditor();
+                closeEditor(editChange);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
         });
@@ -88,14 +70,13 @@ public class ChatItemViewHolder extends RecyclerView.ViewHolder
         tvMessage.setVisibility(View.GONE);
     }
     
-    private void closeEditor()
+    private void closeEditor(Consumer<String> editChange)
     {
         boolean hasTextChanges = tvMessage.getText().toString().equals( tvMessage.getText().toString());
     
         if(hasTextChanges && data != null)
         {
-            String newContent = etMessage.getText().toString();
-            sendEditRequest(newContent);
+            editChange.accept(etMessage.getText().toString());
         }
     
         tvMessage.setVisibility(View.VISIBLE);

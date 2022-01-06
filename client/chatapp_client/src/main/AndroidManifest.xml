@@ -1,38 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.myapplication">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
+        android:name="com.example.myapplication.ChatApplication"
         android:allowBackup="true"
+        android:debuggable="true"
         android:icon="@drawable/ic_chatapp_128"
         android:label="@string/app_name"
         android:roundIcon="@drawable/ic_chatapp_round_128"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication">
+        android:theme="@style/Theme.MyApplication"
+        tools:ignore="HardcodedDebugMode">
+
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
         <activity
             android:name=".activities.HomeActivity"
             android:exported="false" />
         <activity
             android:name=".activities.RegisterActivity"
             android:exported="false" />
-        <activity
-            android:name=".activities.LoginActivity"
-            android:exported="false" />
+
         <activity
             android:name=".activities.ChatActivity"
             android:exported="false" />
-        <activity
-            android:name=".activities.MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

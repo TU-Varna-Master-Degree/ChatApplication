@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.myapplication.ChatApplication;
 import com.example.myapplication.utils.FormRules;
 import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
@@ -42,13 +43,19 @@ public class LoginActivity extends AppCompatActivity implements ActivityResultCa
 
     private FormRules[] rules;
 
-    private ActivityResultLauncher<Intent> startForResult;
-
+    private ActivityResultLauncher<Intent> startForResult = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            LoginActivity.this);
+    
+    private NetClient client;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        
+        client = ((ChatApplication) getApplication()).getNetClient();
+        
         etUserLoginInput = findViewById(R.id.login_tv_input);
         etPassword = findViewById(R.id.login_tv_password);
         chbRememberMe = findViewById(R.id.login_chb_remember_me);
@@ -56,20 +63,10 @@ public class LoginActivity extends AppCompatActivity implements ActivityResultCa
         findViewById(R.id.login_tv_register).setOnClickListener(view -> LaunchRegisterForm());
         findViewById(R.id.login_btn_login).setOnClickListener(view -> DoLogin());
 
-        if (savedInstanceState != null) {
-            etUserLoginInput.setText(savedInstanceState.getString(LOGIN_USER_INFO));
-            etPassword.setText(savedInstanceState.getString(LOGIN_PASSWORD));
-            chbRememberMe.setChecked(savedInstanceState.getBoolean(LOGIN_REMEMBER));
-        }
-
         if (Debug.isDebuggerConnected()) {
             SetDebugInfo();
         }
-
-        startForResult = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                LoginActivity.this);
-
+        
         TextView tvUsernameError = findViewById(R.id.login_error_username);
         TextView tvPasswordError = findViewById(R.id.login_error_password);
 
@@ -87,38 +84,48 @@ public class LoginActivity extends AppCompatActivity implements ActivityResultCa
         outState.putString(LOGIN_PASSWORD, etPassword.getText().toString());
         outState.putBoolean(LOGIN_REMEMBER, chbRememberMe.isChecked());
     }
+    
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        etUserLoginInput.setText(outState.getString(LOGIN_USER_INFO));
+        etPassword.setText(outState.getString(LOGIN_PASSWORD));
+        chbRememberMe.setChecked(outState.getBoolean(LOGIN_REMEMBER));
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        NetClient.register(this::onServerResponse);
+        client.register(this::onServerResponse);
         TryRememberLogin();
     }
 
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        client.unregister(this::onServerResponse);
+    }
+    
+    @Override
+    public void onActivityResult(ActivityResult result) {
+    
+    }
+    
     private void TryRememberLogin() {
         SharedPreferences pref = getPreferences(Context.MODE_PRIVATE);
         if (!pref.getBoolean(LOGIN_REMEMBER, false)) {
             return;
         }
-
+        
         UserLoginModel model = new UserLoginModel(
                 pref.getString(LOGIN_USER_INFO, null),
                 pref.getString(LOGIN_PASSWORD, null)
         );
-
+        
         RequestLogin(model);
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        NetClient.unregister(this::onServerResponse);
-    }
-
-    @Override
-    public void onActivityResult(ActivityResult result) {
-    }
-
+    
     public void onServerResponse(ServerResponse response) {
         if (response.getOperationType() == OperationType.USER_LOGIN) {
             CompleteActivity(response);
@@ -170,15 +177,26 @@ public class LoginActivity extends AppCompatActivity implements ActivityResultCa
         user.setPassword(model.getPassword());
         request.setData(user);
 
-        NetClient.sendRequest(request);
+        client.sendRequest(request);
     }
-
-    private void CompleteActivity(ServerResponse response) {
-        if (response.getCode() == StatusCode.SUCCESSFUL) {
+    
+    private void CompleteActivity(ServerResponse response)
+    {
+        if(response.getOperationType() != OperationType.USER_LOGIN)
+            return;
+        
+        if ( response.getCode() == StatusCode.SUCCESSFUL)
+        {
             SaveConfig();
             setResult(LoginActivity.RESULT_OK);
+            
+            Intent intent = new Intent(this, HomeActivity.class);
+            startActivity( intent );
+            
             finish();
-        } else {
+        }
+        else
+        {
             runOnUiThread(() ->
             {
                 Toast.makeText(LoginActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();

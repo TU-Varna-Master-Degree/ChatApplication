@@ -9,18 +9,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.holders.UserViewHolder;
+import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
 import java.util.stream.IntStream;
 
+import domain.client.dialogue.ServerRequest;
 import domain.client.dto.FindFriendDto;
+import domain.client.enums.OperationType;
 
 public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> {
 
     final private List<FindFriendDto> data;
-
-    public UserAdapter(List<FindFriendDto> data) {
+    final private NetClient client;
+    
+    public UserAdapter(List<FindFriendDto> data, NetClient client) {
         this.data = data;
+        this.client = client;
     }
 
     @NonNull
@@ -35,8 +40,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         FindFriendDto user = data.get(position);
-        holder.setUserId(user.getId());
+    
         holder.setUsername(user.getUsername());
+        holder.setOnAddFriend((view) -> {
+            ServerRequest<Long> request = new ServerRequest<>(OperationType.CREATE_FRIENDSHIP);
+            request.setData(user.getId());
+            client.sendRequest(request);
+        });
     }
 
     @Override

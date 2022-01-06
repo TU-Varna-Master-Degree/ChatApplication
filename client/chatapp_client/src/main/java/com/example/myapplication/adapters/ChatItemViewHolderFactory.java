@@ -11,13 +11,17 @@ import com.example.myapplication.holders.ChatItemViewHolder;
 
 public class ChatItemViewHolderFactory
 {
+    public ChatItemViewHolderFactory( )
+    {
+
+    }
+    
     RecyclerView.ViewHolder create(ViewGroup parent, ChatItemViewType type)
     {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.chat_view_item, parent, false);
         
-        
-        ChatItemViewHolder viewHolder = new ChatItemViewHolder(view);
+        ChatItemViewHolder viewHolder = new ChatItemViewHolder( view );
         
         switch( type )
         {
@@ -31,7 +35,7 @@ public class ChatItemViewHolderFactory
             case VIEW_TYPE_OTHER_TEXT:
                 viewHolder.anchorLeft();
         }
-
+        
         return viewHolder;
     }
 }

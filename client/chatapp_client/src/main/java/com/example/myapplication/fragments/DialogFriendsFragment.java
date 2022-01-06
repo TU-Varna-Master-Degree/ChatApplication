@@ -1,6 +1,11 @@
 package com.example.myapplication.fragments;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -8,15 +13,9 @@ import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.Toast;
-
-import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
 import com.example.myapplication.adapters.FriendsToGroupAdapter;
+import com.example.myapplication.utils.NetClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +33,14 @@ public class DialogFriendsFragment extends DialogFragment {
     private static final String FRIENDS_ID = "FRIENDS_ID";
 
     private Long groupId;
-
-    public DialogFriendsFragment() {
+    private final NetClient client;
+    
+    public DialogFriendsFragment(NetClient client) {
+        this.client = client;
     }
 
-    public static DialogFriendsFragment newInstance(Long groupId, ArrayList<GroupFriendDto> friends) {
-        DialogFriendsFragment fragment = new DialogFriendsFragment();
+    public static DialogFriendsFragment newInstance(NetClient client, Long groupId, ArrayList<GroupFriendDto> friends) {
+        DialogFriendsFragment fragment = new DialogFriendsFragment(client);
         Bundle args = new Bundle();
         args.putLong(GROUP_ID, groupId);
         args.putSerializable(FRIENDS_ID, friends);
@@ -77,11 +78,13 @@ public class DialogFriendsFragment extends DialogFragment {
             Toast.makeText(getActivity(), "Please, select at least one friend!", Toast.LENGTH_LONG).show();
         } else {
             ServerRequest<AddGroupFriendsDto> request = new ServerRequest<>(OperationType.ADD_GROUP_FRIENDS);
-            AddGroupFriendsDto addGroupFriendsDto = new AddGroupFriendsDto();
-            addGroupFriendsDto.setGroupId(groupId);
-            addGroupFriendsDto.setUserIds(checkedIds);
-            request.setData(addGroupFriendsDto);
-            NetClient.sendRequest(request);
+            {
+                AddGroupFriendsDto addGroupFriendsDto = new AddGroupFriendsDto();
+                addGroupFriendsDto.setGroupId(groupId);
+                addGroupFriendsDto.setUserIds(checkedIds);
+                request.setData(addGroupFriendsDto);
+            }
+            client.sendRequest(request);
             dismiss();
         }
     }
