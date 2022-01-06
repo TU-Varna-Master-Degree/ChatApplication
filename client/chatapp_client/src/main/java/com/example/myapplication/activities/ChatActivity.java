@@ -3,30 +3,22 @@ package com.example.myapplication.activities;
 import static domain.client.enums.OperationType.GROUP_NOTIFICATIONS;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.ChatApplication;
 import com.example.myapplication.R;
 import com.example.myapplication.adapters.ChatAdapter;
 import com.example.myapplication.fragments.DialogFriendsFragment;
-import com.example.myapplication.utils.NetClient;
+import com.example.myapplication.utils.AndroidFileLoaderDialog;
+import com.example.myapplication.utils.AndroidLocalFileData;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import domain.client.dialogue.ServerRequest;
@@ -39,7 +31,7 @@ import domain.client.enums.MessageType;
 import domain.client.enums.OperationType;
 import domain.client.enums.StatusCode;
 
-public class ChatActivity extends AppCompatActivity
+public class ChatActivity extends ChatAppBaseActivity
 {
     public static final String IN_CHAT_GROUP_ID = "IN_CHAT_GROUP_ID";
 
@@ -48,7 +40,7 @@ public class ChatActivity extends AppCompatActivity
     private ChatAdapter adapter;
     private RecyclerView lstView;
     
-    NetClient client;
+    AndroidFileLoaderDialog browser = new AndroidFileLoaderDialog(this, this::requestSendFile);
     
     /*
     * Потребителски имена - (header)
@@ -72,42 +64,16 @@ public class ChatActivity extends AppCompatActivity
         usernamesTv.setText(sb.toString());
     }
     * */
-    private final ActivityResultLauncher startBrowser = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result ->
-            {
-                if(result.getResultCode() == RESULT_OK && result.getData() != null)
-                {
-                    new Thread(()-> requestSendFile( result.getData().getData())).start();
-                }
-                
-            });
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-    
-        client = ((ChatApplication) getApplication()).getNetClient();
-        
         setContentView(R.layout.chat_view);
+        
         readIntentInput();
         initializeViews();
         requestMessageHistory();
-    }
-    
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-        client.register(this::onResponse);
-    }
-
-    @Override
-    protected void onStop()
-    {
-        super.onStop();
-        client.unregister(this::onResponse);
     }
     
     private void initializeViews()
@@ -116,16 +82,11 @@ public class ChatActivity extends AppCompatActivity
         lstView.setLayoutManager(new LinearLayoutManager(this));
         
         etMessage = findViewById(R.id.chat_view_et_input);
-        
         etMessage.setOnLongClickListener(view ->
         {
-            Intent intent = new Intent()
-                    .setType("*/*")
-                    .setAction(Intent.ACTION_GET_CONTENT);
-    
-            startBrowser.launch(Intent.createChooser(intent, "Select a file"));
+            browser.startModalDialog();
             return true;
-        }); // Start File Browser
+        });
         etMessage.setOnFocusChangeListener((view, hasFocus)->
         {
             if(!hasFocus)
@@ -222,27 +183,19 @@ public class ChatActivity extends AppCompatActivity
         client.sendRequest(request);
     }
     
-    private void requestSendFile(Uri filePath )
+    private void requestSendFile( AndroidLocalFileData data )
     {
         ServerRequest<SendMessageDto> request = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
         {
-            try
+            SendMessageDto sendMessageDto = new SendMessageDto();
             {
-                SendMessageDto sendMessageDto = new SendMessageDto();
-                {
-                    sendMessageDto.setGroupId(groupId);
-                    InputStream iStream = getContentResolver().openInputStream(filePath);
-                    sendMessageDto.setFileName(filePath.getPath());
-                    sendMessageDto.setFile(readBytes(iStream));
-                    sendMessageDto.setMessageType(MessageType.FILE);
-                }
-                request.setData(sendMessageDto);
+                sendMessageDto.setGroupId(groupId);
+                sendMessageDto.setFileName(data.getFileName());
+                sendMessageDto.setFileType(data.getFileExt());
+                sendMessageDto.setFile(data.getData());
+                sendMessageDto.setMessageType(MessageType.FILE);
             }
-            catch (IOException ignored)
-            {
-        
-            }
-            
+            request.setData(sendMessageDto);
         }
         client.sendRequest(request);
     }
@@ -266,8 +219,10 @@ public class ChatActivity extends AppCompatActivity
             runOnUiThread(()->adapter.update(data));
     }
     
+    
     @SuppressWarnings("rawtypes")
-    private void onResponse(ServerResponse response)
+    @Override
+    protected void onResponse(ServerResponse response)
     {
         if (response.getCode() != StatusCode.SUCCESSFUL) {
             runOnUiThread(() -> Toast.makeText(ChatActivity.this, response.getMessage(), Toast.LENGTH_LONG).show());
@@ -299,19 +254,4 @@ public class ChatActivity extends AppCompatActivity
             }
         }
     }
-    
-    @NonNull
-    private static byte[] readBytes(InputStream inputStream) throws IOException
-    {
-        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-        int bufferSize = 1024;
-        byte[] buffer = new byte[bufferSize];
-        
-        int len = 0;
-        while ((len = inputStream.read(buffer)) != -1) {
-            byteBuffer.write(buffer, 0, len);
-        }
-        return byteBuffer.toByteArray();
-    }
-
 }

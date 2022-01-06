@@ -9,13 +9,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.myapplication.ChatApplication;
-import com.example.myapplication.utils.FormRules;
-import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
 import com.example.myapplication.models.UserRegisterModel;
+import com.example.myapplication.utils.FormRules;
 
 import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
@@ -23,7 +20,7 @@ import domain.client.dto.UserDto;
 import domain.client.enums.OperationType;
 import domain.client.enums.StatusCode;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends ChatAppBaseActivity {
 
     static final String REGISTER_USER_NAME = "REGISTER_USER_NAME";
     static final String REGISTER_EMAIL = "REGISTER_EMAIL";
@@ -38,15 +35,12 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView tvConfPasswordError;
 
     private FormRules[] rules;
-    private NetClient client ;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.register_activity);
-    
-        client = ((ChatApplication) getApplication()).getNetClient();
-        
+
         etUsername = findViewById(R.id.reg_et_username);
         etEmail = findViewById(R.id.reg_et_email);
         etPassword = findViewById(R.id.reg_et_pw);
@@ -94,18 +88,6 @@ public class RegisterActivity extends AppCompatActivity {
         etEmail.setText(outState.getString(REGISTER_EMAIL));
         etPassword.setText(outState.getString(REGISTER_PASSWORD));
         etConfirmPassword.setText(outState.getString(REGISTER_CONFIRM_PASSWORD));
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        client.register(this::onServerResponse);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        client.unregister(this::onServerResponse);
     }
 
     @SuppressLint("SetTextI18n")
@@ -164,8 +146,9 @@ public class RegisterActivity extends AppCompatActivity {
 
         client.sendRequest(request);
     }
-
-    public void onServerResponse(ServerResponse response) {
+    
+    @Override
+    protected void onResponse(ServerResponse response) {
         if (response.getOperationType() == OperationType.USER_REGISTER) {
             CompleteRegister(response);
         }

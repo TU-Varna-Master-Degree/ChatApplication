@@ -17,16 +17,13 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.myapplication.ChatApplication;
 import com.example.myapplication.R;
 import com.example.myapplication.adapters.FriendshipAdapter;
 import com.example.myapplication.adapters.GroupAdapter;
 import com.example.myapplication.adapters.UserAdapter;
-import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
 
@@ -38,7 +35,7 @@ import domain.client.dto.GroupDto;
 import domain.client.enums.OperationType;
 import domain.client.enums.StatusCode;
 
-public class HomeActivity extends AppCompatActivity
+public class HomeActivity extends ChatAppBaseActivity
         implements ActivityResultCallback<ActivityResult> {
 
     private SearchView searchView;
@@ -47,16 +44,12 @@ public class HomeActivity extends AppCompatActivity
     private Spinner cb;
     private UserAdapter usersAdapter;
     private ActivityResultLauncher<Intent> startForResult;
-
-    private NetClient client;
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chatapp_home_activity);
-        
-        client = client = ((ChatApplication) getApplication()).getNetClient();
         
         searchView = findViewById(R.id.home_search);
         searchViewText = findViewById(R.id.home_search_tv);
@@ -78,20 +71,9 @@ public class HomeActivity extends AppCompatActivity
             new ActivityResultContracts.StartActivityForResult(),
             this);
     }
-
+    
     @Override
-    protected void onStart() {
-        super.onStart();
-        client.register(this::onServerResponse);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        client.unregister(this::onServerResponse);
-    }
-
-    private void onServerResponse(ServerResponse response) {
+    protected void onResponse(ServerResponse response) {
         runOnUiThread(() -> {
             if (OperationType.USER_GROUPS.equals(response.getOperationType())) {
                 loadGroups((List<GroupDto>) response.getData());

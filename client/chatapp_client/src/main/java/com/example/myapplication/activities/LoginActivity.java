@@ -16,13 +16,10 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.myapplication.ChatApplication;
-import com.example.myapplication.utils.FormRules;
-import com.example.myapplication.utils.NetClient;
 import com.example.myapplication.R;
 import com.example.myapplication.models.UserLoginModel;
+import com.example.myapplication.utils.FormRules;
 
 import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
@@ -31,7 +28,9 @@ import domain.client.enums.OperationType;
 import domain.client.enums.StatusCode;
 
 
-public class LoginActivity extends AppCompatActivity implements ActivityResultCallback<ActivityResult> {
+public class LoginActivity extends ChatAppBaseActivity
+        implements ActivityResultCallback<ActivityResult>
+{
 
     static final String LOGIN_USER_INFO = "LOGIN_USER_INFO";
     static final String LOGIN_PASSWORD = "LOGIN_PASSWORD";
@@ -47,14 +46,10 @@ public class LoginActivity extends AppCompatActivity implements ActivityResultCa
             new ActivityResultContracts.StartActivityForResult(),
             LoginActivity.this);
     
-    private NetClient client;
-    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        
-        client = ((ChatApplication) getApplication()).getNetClient();
         
         etUserLoginInput = findViewById(R.id.login_tv_input);
         etPassword = findViewById(R.id.login_tv_password);
@@ -96,15 +91,7 @@ public class LoginActivity extends AppCompatActivity implements ActivityResultCa
     @Override
     protected void onStart() {
         super.onStart();
-        client.register(this::onServerResponse);
         TryRememberLogin();
-    }
-
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        client.unregister(this::onServerResponse);
     }
     
     @Override
@@ -126,7 +113,7 @@ public class LoginActivity extends AppCompatActivity implements ActivityResultCa
         RequestLogin(model);
     }
     
-    public void onServerResponse(ServerResponse response) {
+    protected void onResponse(ServerResponse response) {
         if (response.getOperationType() == OperationType.USER_LOGIN) {
             CompleteActivity(response);
         }
