@@ -20,8 +20,9 @@ public class AndroidLocalFileData
     public AndroidLocalFileData(Context context, Uri uri) throws IOException
     {
         InputStream iStream = context.getContentResolver().openInputStream(uri);
-        this.fileExt = context.getContentResolver().getType(uri);
+        
         this.fileName = queryForFileName( context, uri );
+        this.fileExt = fileName.substring(fileName.lastIndexOf("."));
         this.data = readBytes(iStream);
     }
     

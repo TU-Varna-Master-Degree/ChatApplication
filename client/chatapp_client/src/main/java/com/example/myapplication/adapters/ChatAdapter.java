@@ -5,25 +5,22 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myapplication.holders.ChatItemViewHolderImpl.ChatItemViewHolderImpl;
+import com.example.myapplication.holders.ChatItemViewHolderImpl.ChatItemViewType;
 import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
 
-import domain.client.dialogue.ServerRequest;
 import domain.client.dto.GroupUserDto;
 import domain.client.dto.MessageDto;
 import domain.client.dto.NotificationDto;
-import domain.client.dto.SendMessageDto;
-import domain.client.enums.MessageType;
-import domain.client.enums.OperationType;
 
 public class ChatAdapter extends RecyclerView.Adapter
 {
     final private NotificationDto notifications;
     final private List<GroupUserDto> users;
     final private List<MessageDto> messages;
-    final private NetClient client;
-    final private ChatItemViewHolderFactory factory = new ChatItemViewHolderFactory();;
+    final private ChatItemViewHolderFactory factory;
     
     // SortedSet
     public ChatAdapter(NotificationDto dto, NetClient client)
@@ -31,7 +28,7 @@ public class ChatAdapter extends RecyclerView.Adapter
         this.notifications = dto;
         this.users = notifications.getUsers();
         this.messages = notifications.getMessages();
-        this.client = client;
+        this.factory = new ChatItemViewHolderFactory(client);
     }
     
     @Override
@@ -75,27 +72,9 @@ public class ChatAdapter extends RecyclerView.Adapter
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
         MessageDto dto = messages.get(position);
-        ChatViewDataBinder binder = (ChatViewDataBinder) holder;
+        ChatItemViewHolderImpl binder = (ChatItemViewHolderImpl) holder;
         binder.setMessageContent(dto);
         binder.setUsername(dto.getUsername());
-        
-        if (!dto.isOwner())
-            return;
-        
-        binder.installEditModeBehaviour((newContent) ->
-        {
-            ServerRequest<SendMessageDto> req = new ServerRequest<>(OperationType.EDIT_NOTIFICATION);
-            {
-                SendMessageDto sendMessageDto = new SendMessageDto();
-                sendMessageDto.setMessageId( dto.getNotificationId() );
-                sendMessageDto.setMessageType(MessageType.TEXT);
-                sendMessageDto.setContent(newContent);
-        
-                req.setData(sendMessageDto);
-            }
-            client.sendRequest(req);
-        });
-        
     }
     
     @Override

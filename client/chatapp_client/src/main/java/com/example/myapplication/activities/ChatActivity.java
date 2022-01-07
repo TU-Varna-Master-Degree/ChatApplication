@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.FragmentManager;
@@ -34,13 +36,14 @@ import domain.client.enums.StatusCode;
 public class ChatActivity extends ChatAppBaseActivity
 {
     public static final String IN_CHAT_GROUP_ID = "IN_CHAT_GROUP_ID";
-
+    
     private Long groupId;
     private EditText etMessage;
     private ChatAdapter adapter;
     private RecyclerView lstView;
     
-    AndroidFileLoaderDialog browser = new AndroidFileLoaderDialog(this, this::requestSendFile);
+    AndroidFileLoaderDialog browser = new AndroidFileLoaderDialog(this, this::addAttachment);
+    AndroidLocalFileData attachment = null;
     
     /*
     * Потребителски имена - (header)
@@ -76,6 +79,23 @@ public class ChatActivity extends ChatAppBaseActivity
         requestMessageHistory();
     }
     
+    private void addAttachment(AndroidLocalFileData data)
+    {
+        this.attachment = data;
+        runOnUiThread(() -> {
+            String label = data.getFileName();
+            
+            LinearLayout messagebox_layout = ((LinearLayout)findViewById(R.id.chat_messagebox_layout));
+            
+            View view = getLayoutInflater().inflate(R.layout.chat_item_file_container, null);
+            ((TextView)view.findViewById(R.id.chat_item_file_text)).setText( label );
+            
+            messagebox_layout.addView(view);
+            
+        });
+        
+    }
+    
     private void initializeViews()
     {
         lstView = findViewById(R.id.chat_view_list);
@@ -87,9 +107,9 @@ public class ChatActivity extends ChatAppBaseActivity
             browser.startModalDialog();
             return true;
         });
-        etMessage.setOnFocusChangeListener((view, hasFocus)->
+        etMessage.setOnFocusChangeListener((view, hasFocus) ->
         {
-            if(!hasFocus)
+            if (!hasFocus)
             {
                 InputMethodManager imm = (InputMethodManager) ChatActivity.this.getSystemService(ChatActivity.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -98,7 +118,11 @@ public class ChatActivity extends ChatAppBaseActivity
         
         findViewById(R.id.chat_layout_back).setOnClickListener(v -> finish());
         findViewById(R.id.btn_add_user).setOnClickListener(this::requestFriendsForGroup);
-        findViewById(R.id.chat_view_btn_send).setOnClickListener((view) -> requestSendMessage(etMessage.getText().toString()));
+        findViewById(R.id.chat_view_btn_send).setOnClickListener((view) ->
+        {
+            requestSendMessage(etMessage.getText().toString());
+            requestSendFile(attachment);
+        });
     }
     
     private void readIntentInput()
@@ -117,9 +141,10 @@ public class ChatActivity extends ChatAppBaseActivity
     /// --------------------
     private void addGroupFriendsHandler(ServerResponse response)
     {
-        runOnUiThread(()->Toast.makeText(this, response.getMessage(), Toast.LENGTH_LONG).show());
+        runOnUiThread(() -> Toast.makeText(this, response.getMessage(), Toast.LENGTH_LONG).show());
         
-        if (StatusCode.SUCCESSFUL.equals(response.getCode())) {
+        if (StatusCode.SUCCESSFUL.equals(response.getCode()))
+        {
             groupId = (Long) response.getData();
             //TODO: could be simplified to update only participants
             requestMessageHistory();
@@ -131,9 +156,11 @@ public class ChatActivity extends ChatAppBaseActivity
         ArrayList<GroupFriendDto> friends = response.getData();
         FragmentManager fragmentManager = getSupportFragmentManager();
         DialogFriendsFragment dialogFriendsFragment = DialogFriendsFragment.newInstance(client, groupId, friends);
-        try {
+        try
+        {
             dialogFriendsFragment.show(fragmentManager, "friends_fragment");
-        } catch (IllegalStateException ex) {}
+        }
+        catch (IllegalStateException ex) {}
     }
     
     /// Get Notification List
@@ -151,8 +178,9 @@ public class ChatActivity extends ChatAppBaseActivity
         NotificationDto notifications = response.getData();
         
         adapter = new ChatAdapter(notifications, client);
-        runOnUiThread(()->{
-            lstView.setAdapter( adapter );
+        runOnUiThread(() ->
+        {
+            lstView.setAdapter(adapter);
             lstView.scrollToPosition(notifications.getMessages().size() - 1);
         });
     }
@@ -165,15 +193,15 @@ public class ChatActivity extends ChatAppBaseActivity
     }
     
     /// Create Notification
-    private void requestSendMessage(String message )
+    private void requestSendMessage(String message)
     {
-        if(message.equals(""))
+        if (message.equals(""))
             return;
         
         ServerRequest<SendMessageDto> request = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
         {
             SendMessageDto sendMessageDto = new SendMessageDto();
-            sendMessageDto.setGroupId( groupId );
+            sendMessageDto.setGroupId(groupId);
             sendMessageDto.setContent(message);
             sendMessageDto.setMessageType(MessageType.TEXT);
             
@@ -183,8 +211,11 @@ public class ChatActivity extends ChatAppBaseActivity
         client.sendRequest(request);
     }
     
-    private void requestSendFile( AndroidLocalFileData data )
+    private void requestSendFile(AndroidLocalFileData data)
     {
+        if (data == null)
+            return;
+        
         ServerRequest<SendMessageDto> request = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
         {
             SendMessageDto sendMessageDto = new SendMessageDto();
@@ -203,11 +234,20 @@ public class ChatActivity extends ChatAppBaseActivity
     private void onCreateNotificationResponse(ServerResponse<MessageDto> response)
     {
         MessageDto data = response.getData();
-        if (data.getGroupId().equals(groupId)) runOnUiThread(()->
+        
+        if (data.getGroupId().equals(groupId)) runOnUiThread(() ->
         {
-            adapter.insert( data );
+            adapter.insert(data);
             lstView.scrollToPosition(adapter.getItemCount() - 1);
             etMessage.setText("");
+            
+            if(data.getFile() != null)
+            {
+                this.attachment = null;
+                LinearLayout layout = (LinearLayout)findViewById(R.id.chat_messagebox_layout);
+                layout.removeView( layout.findViewById(R.id.chat_item_file_link) );
+            }
+            
         });
     }
     
@@ -216,7 +256,7 @@ public class ChatActivity extends ChatAppBaseActivity
     {
         MessageDto data = response.getData();
         if (data.getGroupId().equals(groupId))
-            runOnUiThread(()->adapter.update(data));
+            runOnUiThread(() -> adapter.update(data));
     }
     
     
@@ -224,7 +264,8 @@ public class ChatActivity extends ChatAppBaseActivity
     @Override
     protected void onResponse(ServerResponse response)
     {
-        if (response.getCode() != StatusCode.SUCCESSFUL) {
+        if (response.getCode() != StatusCode.SUCCESSFUL)
+        {
             runOnUiThread(() -> Toast.makeText(ChatActivity.this, response.getMessage(), Toast.LENGTH_LONG).show());
             return;
         }
@@ -232,23 +273,28 @@ public class ChatActivity extends ChatAppBaseActivity
         // Dispatch
         switch (response.getOperationType())
         {
-            case GROUP_NOTIFICATIONS: {
+            case GROUP_NOTIFICATIONS:
+            {
                 onGroupNotificationResponse(response);
                 break;
             }
-            case CREATE_NOTIFICATION: {
+            case CREATE_NOTIFICATION:
+            {
                 onCreateNotificationResponse(response);
                 break;
             }
-            case EDIT_NOTIFICATION: {
+            case EDIT_NOTIFICATION:
+            {
                 onEditNotificationResponse(response);
                 break;
             }
-            case GROUP_FRIENDS_LIST: {
+            case GROUP_FRIENDS_LIST:
+            {
                 showFriendsFragment(response);
                 break;
             }
-            case ADD_GROUP_FRIENDS: {
+            case ADD_GROUP_FRIENDS:
+            {
                 addGroupFriendsHandler(response);
                 break;
             }
