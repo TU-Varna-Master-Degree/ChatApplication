@@ -3,6 +3,7 @@ package com.example.myapplication.activities;
 import static domain.client.enums.OperationType.GROUP_NOTIFICATIONS;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -19,6 +20,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.adapters.ChatAdapter;
 import com.example.myapplication.fragments.DialogFriendsFragment;
 import com.example.myapplication.utils.AndroidFileLoaderDialog;
+import com.example.myapplication.utils.AndroidFileSaveDialog;
 import com.example.myapplication.utils.AndroidLocalFileData;
 
 import java.util.ArrayList;
@@ -41,32 +43,13 @@ public class ChatActivity extends ChatAppBaseActivity
     private EditText etMessage;
     private ChatAdapter adapter;
     private RecyclerView lstView;
+    private LinearLayout mbLayout;
+    private View attachmentView;
     
-    AndroidFileLoaderDialog browser = new AndroidFileLoaderDialog(this, this::addAttachment);
+    AndroidFileLoaderDialog browser = new AndroidFileLoaderDialog(this, this::addFileAttachment);
+    AndroidFileSaveDialog save = new AndroidFileSaveDialog(this, this::openContent);
     AndroidLocalFileData attachment = null;
     
-    /*
-    * Потребителски имена - (header)
-      TODO: File view fix
-    * public void setUsernamesTv(List<String> usernames) {
-        StringBuilder sb = new StringBuilder();
-
-        for (String username : usernames) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-
-            if (sb.length() + username.length() > 27) {
-                sb.append("...");
-                break;
-            } else {
-                sb.append(username);
-            }
-        }
-
-        usernamesTv.setText(sb.toString());
-    }
-    * */
     
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -79,21 +62,20 @@ public class ChatActivity extends ChatAppBaseActivity
         requestMessageHistory();
     }
     
-    private void addAttachment(AndroidLocalFileData data)
+    private void addFileAttachment(AndroidLocalFileData data)
     {
         this.attachment = data;
-        runOnUiThread(() -> {
-            String label = data.getFileName();
-            
-            LinearLayout messagebox_layout = ((LinearLayout)findViewById(R.id.chat_messagebox_layout));
-            
-            View view = getLayoutInflater().inflate(R.layout.chat_item_file_container, null);
-            ((TextView)view.findViewById(R.id.chat_item_file_text)).setText( label );
-            
-            messagebox_layout.addView(view);
-            
-        });
         
+        String label = data.getFileName();
+        
+        mbLayout.addView( attachmentView );
+        ((TextView)attachmentView.findViewById(R.id.chat_item_file_text)).setText( label );
+    }
+    
+    private void removeFileAttachment()
+    {
+        this.attachment = null;
+        mbLayout.removeView(attachmentView);
     }
     
     private void initializeViews()
@@ -116,12 +98,20 @@ public class ChatActivity extends ChatAppBaseActivity
             }
         }); // Close Keyboard
         
+        mbLayout = ((LinearLayout)findViewById(R.id.chat_messagebox_layout));
+        attachmentView = getLayoutInflater().inflate(R.layout.chat_item_file_container, null);
+        
         findViewById(R.id.chat_layout_back).setOnClickListener(v -> finish());
         findViewById(R.id.btn_add_user).setOnClickListener(this::requestFriendsForGroup);
         findViewById(R.id.chat_view_btn_send).setOnClickListener((view) ->
         {
-            requestSendMessage(etMessage.getText().toString());
-            requestSendFile(attachment);
+            String message = etMessage.getText().toString();
+            
+            if(!message.equals(""))
+                requestSendMessage(etMessage.getText().toString());
+            
+            if(attachment != null)
+                requestSendFile(attachment);
         });
     }
     
@@ -177,7 +167,7 @@ public class ChatActivity extends ChatAppBaseActivity
     {
         NotificationDto notifications = response.getData();
         
-        adapter = new ChatAdapter(notifications, client);
+        adapter = new ChatAdapter(notifications, client, this::onFileContentReceived);
         runOnUiThread(() ->
         {
             lstView.setAdapter(adapter);
@@ -195,9 +185,6 @@ public class ChatActivity extends ChatAppBaseActivity
     /// Create Notification
     private void requestSendMessage(String message)
     {
-        if (message.equals(""))
-            return;
-        
         ServerRequest<SendMessageDto> request = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
         {
             SendMessageDto sendMessageDto = new SendMessageDto();
@@ -213,9 +200,6 @@ public class ChatActivity extends ChatAppBaseActivity
     
     private void requestSendFile(AndroidLocalFileData data)
     {
-        if (data == null)
-            return;
-        
         ServerRequest<SendMessageDto> request = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
         {
             SendMessageDto sendMessageDto = new SendMessageDto();
@@ -241,11 +225,9 @@ public class ChatActivity extends ChatAppBaseActivity
             lstView.scrollToPosition(adapter.getItemCount() - 1);
             etMessage.setText("");
             
-            if(data.getFile() != null)
+            if(data.getMessageType() == MessageType.FILE)
             {
-                this.attachment = null;
-                LinearLayout layout = (LinearLayout)findViewById(R.id.chat_messagebox_layout);
-                layout.removeView( layout.findViewById(R.id.chat_item_file_link) );
+                removeFileAttachment();
             }
             
         });
@@ -259,6 +241,14 @@ public class ChatActivity extends ChatAppBaseActivity
             runOnUiThread(() -> adapter.update(data));
     }
     
+    private void onFileContentReceived(MessageDto response)
+    {
+        // TODO: Replace with FileContentDto
+        if( response.getGroupId().equals(groupId) )runOnUiThread(()->
+        {
+            save.openModalSaveAs( response );
+        });
+    }
     
     @SuppressWarnings("rawtypes")
     @Override
@@ -298,6 +288,17 @@ public class ChatActivity extends ChatAppBaseActivity
                 addGroupFriendsHandler(response);
                 break;
             }
+            default: // TODO: Download Content
+                // onFileContentReceived(response.getData());
         }
+    }
+    
+    private void openContent(Uri uri)
+    {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setDataAndType(uri, getContentResolver().getType(uri));
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(intent);
     }
 }

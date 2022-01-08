@@ -40,7 +40,7 @@ public class AndroidFileLoaderDialog
         try
         {
             AndroidLocalFileData file = new AndroidLocalFileData(activity, uri );
-            onFileLoadedCallback.accept( file );
+            activity.runOnUiThread(()-> onFileLoadedCallback.accept( file ));
         }
         catch (IOException e)
         {

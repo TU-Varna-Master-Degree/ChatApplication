@@ -20,7 +20,7 @@ public enum ChatItemViewType
     
     public static boolean isOwnerPov(ChatItemViewType flag)
     {
-        return (flag.getValue() & 0x1) == 0;
+        return flag == VIEW_TYPE_POV_TEXT || flag == VIEW_TYPE_POV_FILE || flag == VIEW_TYPE_POV_IMAGE;
     }
     
 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
@@ -16,16 +17,33 @@ public class TextMessage extends ImplBase
 {
     TextView tvMessage;
     EditText etMessage;
+    LinearLayout layout;
+    
     BiConsumer<Long, String> onEditCommit;
     
     public TextMessage(View view, BiConsumer<Long, String> onEditCommitCallback)
     {
         super(view);
-        tvMessage = view.findViewById(R.id.chat_item_tv_message);
-        etMessage = view.findViewById(R.id.chat_item_et_message);
+        layout = view.findViewById(R.id.chat_item_text);
         
+        tvMessage = layout.findViewById(R.id.chat_item_tv_message);
+        etMessage = layout.findViewById(R.id.chat_item_et_message);
+        
+        layout.removeView(etMessage);
+
         this.onEditCommit = onEditCommitCallback;
         installEditModeBehaviour();
+    }
+    public TextMessage(View view)
+    {
+        super(view);
+    
+        layout = view.findViewById(R.id.chat_item_text);
+    
+        tvMessage = layout.findViewById(R.id.chat_item_tv_message);
+        etMessage = layout.findViewById(R.id.chat_item_et_message);
+        
+        layout.removeView(etMessage);
     }
     
     public void installEditModeBehaviour()
@@ -53,17 +71,18 @@ public class TextMessage extends ImplBase
     
     private void openEditor()
     {
-        etMessage.setVisibility(View.VISIBLE);
+        layout.addView(etMessage);
         etMessage.setText(tvMessage.getText());
         etMessage.requestFocus();
         
-        tvMessage.setVisibility(View.GONE);
+      
+        layout.removeView(tvMessage);
     }
     
     
     private void closeEditor()
     {
-        boolean hasTextChanges = tvMessage.getText().toString().equals( tvMessage.getText().toString());
+        boolean hasTextChanges = etMessage.getText().toString().equals( tvMessage.getText().toString());
         
         if(hasTextChanges)
         {
@@ -73,8 +92,15 @@ public class TextMessage extends ImplBase
             );
         }
         
-        tvMessage.setVisibility(View.VISIBLE);
-        etMessage.setVisibility(View.GONE);
+        etMessage.clearFocus();
+        
+        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(etMessage.getWindowToken(), 0);
+        
+        
+        
+        layout.addView(tvMessage);
+        layout.removeView(etMessage);
     }
     
     @Override
@@ -83,6 +109,5 @@ public class TextMessage extends ImplBase
         super.setMessageContent(data);
         
         tvMessage.setText(data.getContent());
-        etMessage.setVisibility(View.GONE);
     }
 }

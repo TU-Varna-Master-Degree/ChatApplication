@@ -10,10 +10,12 @@ import com.example.myapplication.holders.ChatItemViewHolderImpl.ChatItemViewType
 import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import domain.client.dto.GroupUserDto;
 import domain.client.dto.MessageDto;
 import domain.client.dto.NotificationDto;
+import domain.client.enums.MessageType;
 
 public class ChatAdapter extends RecyclerView.Adapter
 {
@@ -21,14 +23,21 @@ public class ChatAdapter extends RecyclerView.Adapter
     final private List<GroupUserDto> users;
     final private List<MessageDto> messages;
     final private ChatItemViewHolderFactory factory;
+    Consumer<MessageDto> cb;
     
     // SortedSet
-    public ChatAdapter(NotificationDto dto, NetClient client)
+    public ChatAdapter(NotificationDto dto, NetClient client, Consumer<MessageDto> cb)
     {
         this.notifications = dto;
         this.users = notifications.getUsers();
         this.messages = notifications.getMessages();
         this.factory = new ChatItemViewHolderFactory(client);
+        this.cb = cb;
+    }
+    
+    private boolean impl_detail_is_image(MessageDto msg)
+    {
+        return true;
     }
     
     @Override
@@ -42,7 +51,14 @@ public class ChatAdapter extends RecyclerView.Adapter
                 case TEXT:
                     return ChatItemViewType.VIEW_TYPE_POV_TEXT.getValue();
                 case FILE:
+                {
+                    if(impl_detail_is_image(msg))
+                    {
+                        return ChatItemViewType.VIEW_TYPE_POV_IMAGE.getValue();
+                    }
                     return ChatItemViewType.VIEW_TYPE_POV_FILE.getValue();
+                }
+                
             }
         }
         else
@@ -52,7 +68,14 @@ public class ChatAdapter extends RecyclerView.Adapter
                 case TEXT:
                     return ChatItemViewType.VIEW_TYPE_OTHER_TEXT.getValue();
                 case FILE:
+                {
+                    if(impl_detail_is_image(msg))
+                    {
+                        return ChatItemViewType.VIEW_TYPE_POV_IMAGE.getValue();
+                    }
                     return ChatItemViewType.VIEW_TYPE_OTHER_FILE.getValue();
+                }
+                
             }
         }
         
@@ -75,6 +98,11 @@ public class ChatAdapter extends RecyclerView.Adapter
         ChatItemViewHolderImpl binder = (ChatItemViewHolderImpl) holder;
         binder.setMessageContent(dto);
         binder.setUsername(dto.getUsername());
+        
+        if(dto.getMessageType() == MessageType.FILE)
+        {
+            holder.itemView.setOnClickListener((v) ->  cb.accept(dto) );
+        }
     }
     
     @Override
