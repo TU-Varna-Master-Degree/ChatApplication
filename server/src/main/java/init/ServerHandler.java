@@ -1,9 +1,15 @@
 package init;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import domain.client.dialogue.ServerRequest;
 import domain.client.dialogue.ServerResponse;
+import domain.client.dto.NotificationDto;
+import domain.client.dto.SendMessageDto;
 import domain.client.dto.UserDto;
-import domain.client.enums.OperationType;
+import domain.enums.MessageType;
+import domain.enums.OperationType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,15 +17,24 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ServerHandler {
 
     private final static Logger logger = LogManager.getLogger();
+    private final static ObjectMapper objectMapper;
     private static ExecutorService executorService;
     private static SocketChannel server;
     private static ServerHandler serverHandler;
+
+    static {
+        objectMapper = JsonMapper.builder()
+            .findAndAddModules()
+            .build();
+    }
 
     public static void main(String[] args) {
         serverHandler = new ServerHandler();
@@ -36,7 +51,7 @@ public class ServerHandler {
         // ** Login request ** //
         ServerRequest<UserDto> request1 = new ServerRequest<>(OperationType.USER_LOGIN);
         UserDto user = new UserDto();
-        user.setUsername("Gosho");
+        user.setUsername("Martin");
         user.setPassword("1111");
         request1.setData(user);
 
@@ -79,9 +94,9 @@ public class ServerHandler {
 //        request2.setData(addGroupFriendsDto);
 
         // ** Get group notifications ** //
-        ServerRequest<Long> request2 = new ServerRequest<>(OperationType.GROUP_NOTIFICATIONS);
-        Long groupId = 7L;
-        request2.setData(groupId);
+//        ServerRequest<Long> request2 = new ServerRequest<>(OperationType.GROUP_NOTIFICATIONS);
+//        Long groupId = 6L;
+//        request2.setData(groupId);
 
         // ** Send message - TEXT ** //
 //        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
@@ -92,19 +107,19 @@ public class ServerHandler {
 //        request2.setData(sendMessageDto);
 
         // ** Send message - FILE ** //
-//        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
-//        SendMessageDto sendMessageDto = new SendMessageDto();
-//        sendMessageDto.setGroupId(7L);
-//        sendMessageDto.setMessageType(MessageType.FILE);
-//        sendMessageDto.setFileName("tree");
-//        sendMessageDto.setFileType("png");
-//        final String filePath = "C:\\Users\\Ivaylo_nikolaev\\Desktop\\ChatApplication\\server\\src\\main\\resources\\files\\tree.png";
-//        try {
-//            sendMessageDto.setFile(Files.readAllBytes(Paths.get(filePath)));
-//        } catch (IOException e) {
-//            System.out.println("Parsing file exception.");
-//        }
-//        request2.setData(sendMessageDto);
+        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.CREATE_NOTIFICATION);
+        SendMessageDto sendMessageDto = new SendMessageDto();
+        sendMessageDto.setGroupId(6L);
+        sendMessageDto.setMessageType(MessageType.FILE);
+        sendMessageDto.setFileName("numb");
+        sendMessageDto.setFileType("mp3");
+        final String filePath = "C:\\Users\\Ivaylo_nikolaev\\Desktop\\numb.mp3";
+        try {
+            sendMessageDto.setFile(Files.readAllBytes(Paths.get(filePath)));
+        } catch (IOException e) {
+            System.out.println("Parsing file exception.");
+        }
+        request2.setData(sendMessageDto);
 
         // ** Edit message - TEXT ** //
 //        ServerRequest<SendMessageDto> request2 = new ServerRequest<>(OperationType.EDIT_NOTIFICATION);
@@ -164,11 +179,9 @@ public class ServerHandler {
     }
 
     private void send(ServerRequest serverRequest) {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-            objectOutputStream.writeObject(serverRequest);
-            objectOutputStream.flush();
-            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
+        try {
+            byte[] responseBytes = objectMapper.writeValueAsBytes(serverRequest);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(responseBytes);
 
             ByteBuffer header = ByteBuffer.allocate(4);
             header.putInt(byteBuffer.limit());
@@ -180,6 +193,8 @@ public class ServerHandler {
             while (byteBuffer.hasRemaining()) {
                 server.write(byteBuffer);
             }
+        } catch (JsonProcessingException ex) {
+            logger.error("Parsing message to the server failed!");
         } catch (IOException e) {
             logger.error("Sending message to the server failed!");
         }
@@ -202,12 +217,15 @@ public class ServerHandler {
                 return;
             }
 
-            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data.array());
-                 ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
-                ServerResponse response = (ServerResponse) objectInputStream.readObject();
-                System.out.println(response.getCode());
-                System.out.println(response.getMessage());
-            } catch (IOException | ClassNotFoundException e) {
+            try {
+                ServerResponse response = objectMapper.readValue(data.array(), ServerResponse.class);
+
+                if (response.getOperationType().equals(OperationType.GROUP_NOTIFICATIONS)) {
+                    NotificationDto notificationDto = objectMapper.convertValue(response.getData(), NotificationDto.class);
+                    System.out.println(response.getCode());
+                    System.out.println(response.getMessage());
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

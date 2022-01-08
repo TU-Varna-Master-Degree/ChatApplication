@@ -1,10 +1,8 @@
 package domain.client.dto;
 
-import domain.client.enums.FriendshipState;
+import domain.enums.FriendshipState;
 
-import java.io.Serializable;
-
-public class UpdateFriendshipDto implements Serializable {
+public class UpdateFriendshipDto {
 
     private Long receiverId;
 

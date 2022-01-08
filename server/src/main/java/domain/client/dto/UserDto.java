@@ -1,8 +1,6 @@
 package domain.client.dto;
 
-import java.io.Serializable;
-
-public class UserDto implements Serializable {
+public class UserDto {
 
     private Long id;
 

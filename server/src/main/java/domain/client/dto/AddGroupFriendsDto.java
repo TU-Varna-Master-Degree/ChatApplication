@@ -1,9 +1,8 @@
 package domain.client.dto;
 
-import java.io.Serializable;
 import java.util.List;
 
-public class AddGroupFriendsDto implements Serializable {
+public class AddGroupFriendsDto {
 
     private Long groupId;
 

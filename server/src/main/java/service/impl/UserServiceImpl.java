@@ -3,7 +3,7 @@ package service.impl;
 import dao.UserDao;
 import domain.client.dialogue.ServerResponse;
 import domain.client.dto.UserDto;
-import domain.client.enums.StatusCode;
+import domain.enums.StatusCode;
 import domain.entities.User;
 import org.apache.commons.codec.digest.DigestUtils;
 import service.UserService;

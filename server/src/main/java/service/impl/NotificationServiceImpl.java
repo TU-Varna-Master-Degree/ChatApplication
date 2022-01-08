@@ -4,11 +4,17 @@ import dao.GroupDao;
 import dao.MessageDao;
 import dao.UserDao;
 import domain.client.dialogue.ServerResponse;
-import domain.client.dto.*;
-import domain.client.enums.MessageType;
-import domain.client.enums.OperationType;
-import domain.client.enums.StatusCode;
-import domain.entities.*;
+import domain.client.dto.GroupUserDto;
+import domain.client.dto.MessageDto;
+import domain.client.dto.NotificationDto;
+import domain.client.dto.SendMessageDto;
+import domain.entities.ChatFile;
+import domain.entities.Group;
+import domain.entities.Notification;
+import domain.entities.UserGroup;
+import domain.enums.MessageType;
+import domain.enums.OperationType;
+import domain.enums.StatusCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import service.NotificationService;
@@ -23,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static init.DispatcherServlet.sendResponse;
+import static init.DispatcherSocket.sendResponse;
 
 public class NotificationServiceImpl implements NotificationService {
 
@@ -82,9 +88,6 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         Notification notification = new Notification();
-        notification.setMessageType(sendMessageDto.getMessageType());
-        notification.setSendDate(LocalDateTime.now());
-
         if (sendMessageDto.getMessageType().equals(MessageType.FILE)) {
             String filePath;
             try {
@@ -104,23 +107,13 @@ public class NotificationServiceImpl implements NotificationService {
             notification.setContent(sendMessageDto.getContent());
         }
 
-        GroupNotificationId groupNotificationId = new GroupNotificationId();
-        groupNotificationId.setNotification(notification);
-        groupNotificationId.setSender(userDao.getById(userId));
+        notification.setMessageType(sendMessageDto.getMessageType());
+        notification.setSendDate(LocalDateTime.now());
+        notification.setGroup(group);
+        notification.setSender(userDao.getById(userId));
+        messageDao.saveNotification(notification);
 
-        GroupNotification groupNotification = new GroupNotification();
-        groupNotification.setId(groupNotificationId);
-        groupNotification.setGroup(group);
-        messageDao.saveGroupNotification(groupNotification);
-
-        MessageDto messageDto = new MessageDto();
-        messageDto.setNotificationId(notification.getId());
-        messageDto.setGroupId(group.getId());
-        messageDto.setMessageType(notification.getMessageType());
-        messageDto.setContent(notification.getContent());
-        messageDto.setSendDate(notification.getSendDate());
-        messageDto.setUserId(groupNotificationId.getSender().getId());
-        messageDto.setUsername(groupNotificationId.getSender().getUsername());
+        MessageDto messageDto = createMessageDto(notification);
         saveFileToDto(sendMessageDto, notification, messageDto);
 
         ServerResponse<MessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
@@ -133,13 +126,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public ServerResponse editMessage(Long userId, SendMessageDto sendMessageDto) {
-        GroupNotification groupNotification = messageDao.getGroupNotificationById(userId, sendMessageDto.getMessageId());
+        Notification notification = messageDao.getNotificationById(sendMessageDto.getMessageId());
 
-        if (groupNotification == null) {
+        if (notification == null) {
             return new ServerResponse(StatusCode.FAILED, "The message wasn't found!");
+        } else if (!userId.equals(notification.getSender().getId())) {
+            return new ServerResponse(StatusCode.FAILED, "You are not owner of the message!");
         }
 
-        Notification notification = groupNotification.getId().getNotification();
         String oldFilePath = null;
 
         if (sendMessageDto.getMessageType().equals(MessageType.FILE)) {
@@ -183,21 +177,14 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        MessageDto messageDto = new MessageDto();
-        messageDto.setNotificationId(notification.getId());
-        messageDto.setGroupId(groupNotification.getGroup().getId());
-        messageDto.setMessageType(notification.getMessageType());
-        messageDto.setContent(notification.getContent());
-        messageDto.setSendDate(notification.getSendDate());
-        messageDto.setUserId(groupNotification.getId().getSender().getId());
-        messageDto.setUsername(groupNotification.getId().getSender().getUsername());
+        MessageDto messageDto = createMessageDto(notification);
         saveFileToDto(sendMessageDto, notification, messageDto);
 
         ServerResponse<MessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
         serverResponse.setOperationType(OperationType.EDIT_NOTIFICATION);
         serverResponse.setData(messageDto);
 
-        sendNotificationsToGroup(groupNotification.getGroup().getUserGroups(), serverResponse);
+        sendNotificationsToGroup(notification.getGroup().getUserGroups(), serverResponse);
         return new ServerResponse(StatusCode.EMPTY);
     }
 
@@ -218,6 +205,18 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         return absolutePath.toString();
+    }
+
+    private MessageDto createMessageDto(Notification notification) {
+        MessageDto messageDto = new MessageDto();
+        messageDto.setNotificationId(notification.getId());
+        messageDto.setGroupId(notification.getGroup().getId());
+        messageDto.setMessageType(notification.getMessageType());
+        messageDto.setContent(notification.getContent());
+        messageDto.setSendDate(notification.getSendDate());
+        messageDto.setUserId(notification.getSender().getId());
+        messageDto.setUsername(notification.getSender().getUsername());
+        return messageDto;
     }
 
     private void saveFileToDto(SendMessageDto sendMessageDto, Notification notification, MessageDto messageDto) {

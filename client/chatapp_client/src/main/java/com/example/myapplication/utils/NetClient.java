@@ -1,50 +1,57 @@
 package com.example.myapplication.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import com.example.myapplication.domain.dialogue.ServerRequest;
+import com.example.myapplication.domain.dialogue.ServerResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import domain.client.dialogue.ServerRequest;
-import domain.client.dialogue.ServerResponse;
+public class NetClient {
 
-public class NetClient
-{
-    private final ArrayList<Consumer<ServerResponse>> handlerList = new ArrayList<>();
-    
     private final String ipAddress;
     private final int serverPort;
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(2);
-    private static SocketChannel server;
-    
+    private final ObjectMapper objectMapper;
+    private SocketChannel server;
+    private final ArrayList<Consumer<ServerResponse>> handlerList = new ArrayList<>();
+
     public NetClient(String ipAddress, int serverPort)
     {
         this.ipAddress = ipAddress;
         this.serverPort = serverPort;
+        this.objectMapper = JsonMapper.builder()
+                .findAndAddModules()
+                .build();
+    }
+
+    public void register(Consumer<ServerResponse> handler) {
+        handlerList.add(handler);
+    }
+    
+    public void unregister(Consumer<ServerResponse> handler) {
+        handlerList.remove(handler);
     }
     
     public void start() {
         executorService.execute(() -> {
             try {
                 server = SocketChannel.open(new InetSocketAddress(ipAddress, serverPort));
-                NetClient.this.listen();
+                listen();
             } catch (IOException e) {
                 System.out.println("Failed to connect to server");
             }
         });
-    }
-    
-    public boolean isRunning()
-    {
-        return server.isOpen();
     }
     
     public void stop() throws IOException {
@@ -55,13 +62,11 @@ public class NetClient
     public void sendRequest(ServerRequest serverRequest) {
         executorService.execute(() -> send(serverRequest));
     }
-    
+
     private void send(ServerRequest serverRequest) {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
-            objectOutputStream.writeObject(serverRequest);
-            objectOutputStream.flush();
-            ByteBuffer byteBuffer = ByteBuffer.wrap(byteArrayOutputStream.toByteArray());
+        try {
+            byte[] responseBytes = objectMapper.writeValueAsBytes(serverRequest);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(responseBytes);
 
             ByteBuffer header = ByteBuffer.allocate(4);
             header.putInt(byteBuffer.limit());
@@ -73,17 +78,17 @@ public class NetClient
             while (byteBuffer.hasRemaining()) {
                 server.write(byteBuffer);
             }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+        } catch (JsonProcessingException ex) {
+            System.out.println("Parsing message to the server failed!");
+        } catch (IOException e) {
+            System.out.println("Sending message to the server failed!");
         }
     }
     
     private void listen() {
         ByteBuffer header = ByteBuffer.allocate(4);
 
-        while (true)
-        {
+        while (true) {
             header.clear();
             if (!readFromServer(header, server)) {
                 return;
@@ -97,21 +102,14 @@ public class NetClient
                 return;
             }
 
-            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data.array());
-                 ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream))
-            {
-                ServerResponse response = (ServerResponse) objectInputStream.readObject();
-                
-                System.out.println(response.getCode());
-                System.out.println(response.getMessage());
-                
+            try {
+                ServerResponse response = objectMapper.readValue(data.array(), ServerResponse.class);
+
                 // Dispatch
-                for(Consumer<ServerResponse> handler : handlerList)
-                {
-                    executorService.execute( ()-> handler.accept(response) );
+                for (Consumer<ServerResponse> handler : handlerList) {
+                    executorService.execute(() -> handler.accept(response));
                 }
-            }
-            catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             data.clear();
@@ -133,15 +131,16 @@ public class NetClient
 
         return true;
     }
-    
-    public void register(Consumer<ServerResponse> handler) {
-        handlerList.add(handler);
+
+    public <T> T getData(ServerResponse responseDate, Class<T> tClass) {
+        return objectMapper.convertValue(responseDate.getData(), tClass);
     }
-    
-    public void unregister(Consumer<ServerResponse> handler) {
-        handlerList.remove(handler);
+
+    public <T> List<T> getDataList(ServerResponse responseDate, Class<T> tClass) {
+        return objectMapper.convertValue(responseDate.getData(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, tClass));
     }
-    
+
     private void closeChannel(SocketChannel channel) {
         try {
             channel.close();

@@ -1,16 +1,17 @@
 package domain.client.dialogue;
 
-import domain.client.enums.OperationType;
-import domain.client.enums.StatusCode;
+import domain.enums.OperationType;
+import domain.enums.StatusCode;
 
-import java.io.Serializable;
-
-public class ServerResponse<T> implements Serializable {
+public class ServerResponse<T> {
 
     private OperationType operationType;
     private StatusCode code;
     private String message;
     private T data;
+
+    public ServerResponse() {
+    }
 
     public ServerResponse(StatusCode code) {
         this.code = code;

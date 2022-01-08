@@ -1,10 +1,9 @@
 package domain.client.dto;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class GroupDto implements Serializable {
+public class GroupDto {
     private Long groupId;
     private List<String> groupUsers;
     private LocalDateTime lastSendMessageDate;

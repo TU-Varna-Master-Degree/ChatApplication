@@ -7,10 +7,9 @@ import android.widget.TextView;
 import androidx.cardview.widget.CardView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.domain.models.Message;
 
 import java.util.function.Consumer;
-
-import domain.client.dto.MessageDto;
 
 public class FileMessage extends ImplBase
 {
@@ -42,7 +41,7 @@ public class FileMessage extends ImplBase
     }
     
     @Override
-    public void setMessageContent(MessageDto data)
+    public void setMessageContent(Message data)
     {
         super.setMessageContent(data);
         

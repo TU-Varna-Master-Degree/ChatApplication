@@ -1,14 +1,14 @@
 import config.HibernateConfiguration;
-import init.DispatcherServlet;
+import init.DispatcherSocket;
 
 public class Main {
 
     public static void main(String[] args) {
         try {
             HibernateConfiguration.init();
-            DispatcherServlet.listen();
+            DispatcherSocket.listen();
         } finally {
-            DispatcherServlet.close();
+            DispatcherSocket.close();
             HibernateConfiguration.close();
         }
     }

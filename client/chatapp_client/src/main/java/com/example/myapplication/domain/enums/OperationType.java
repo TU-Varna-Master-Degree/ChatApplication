@@ -1,0 +1,16 @@
+package com.example.myapplication.domain.enums;
+
+public enum OperationType {
+    USER_REGISTER,
+    USER_LOGIN,
+    FRIENDSHIP_LIST,
+    CREATE_FRIENDSHIP,
+    UPDATE_FRIENDSHIP,
+    FIND_FRIENDS,
+    USER_GROUPS,
+    GROUP_FRIENDS_LIST,
+    ADD_GROUP_FRIENDS,
+    GROUP_NOTIFICATIONS,
+    CREATE_NOTIFICATION,
+    EDIT_NOTIFICATION
+}

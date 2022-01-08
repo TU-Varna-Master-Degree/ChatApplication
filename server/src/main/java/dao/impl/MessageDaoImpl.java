@@ -3,8 +3,6 @@ package dao.impl;
 import config.HibernateConfiguration;
 import dao.MessageDao;
 import domain.client.dto.MessageDto;
-import domain.entities.ChatFile;
-import domain.entities.GroupNotification;
 import domain.entities.Notification;
 
 import javax.persistence.EntityManager;
@@ -23,32 +21,32 @@ public class MessageDaoImpl implements MessageDao {
     @Override
     public List<MessageDto> getGroupMessages(Long userId, Long groupId) {
         String sql = "SELECT new domain.client.dto.MessageDto(" +
-                "    gn.id.notification.id, " +
-                "    gn.id.notification.content, " +
-                "    gn.id.notification.messageType, " +
-                "    gn.id.notification.sendDate, " +
+                "    n.id, " +
+                "    n.content, " +
+                "    n.messageType, " +
+                "    n.sendDate, " +
                 "    f.filePath," +
                 "    f.fileName," +
                 "    f.fileType," +
-                "    gn.id.sender.id," +
-                "    gn.id.sender.username," +
-                "    gn.id.sender.id = :userId," +
-                "    gn.group.id) " +
-                " FROM GroupNotification gn " +
-                " LEFT OUTER JOIN gn.id.notification.file f" +
-                " WHERE (gn.group.id = :groupId" +
+                "    n.sender.id," +
+                "    n.sender.username," +
+                "    n.sender.id = :userId," +
+                "    n.group.id) " +
+                " FROM Notification n " +
+                " LEFT OUTER JOIN n.file f" +
+                " WHERE (n.group.id = :groupId" +
                 "   OR EXISTS " +
                 "      (SELECT 1" +
                 "        FROM Group g" +
                 "       WHERE g.id = :groupId" +
-                "        AND g.parent.id = gn.group.id" +
-                "        AND gn.id.notification.sendDate <= g.creationDate))" +
-                "  AND gn.id.notification.sendDate >= " +
+                "        AND g.parent.id = n.group.id" +
+                "        AND n.sendDate <= g.creationDate))" +
+                "  AND n.sendDate >= " +
                 "       (SELECT ug.joinDate" +
                 "         FROM UserGroup ug" +
                 "        WHERE ug.id.user.id = :userId" +
                 "         AND ug.id.group.id = :groupId)" +
-                " ORDER BY gn.id.notification.sendDate";
+                " ORDER BY n.sendDate";
 
         Query query = entityManager.createQuery(sql);
         query.setParameter("userId", userId);
@@ -64,32 +62,7 @@ public class MessageDaoImpl implements MessageDao {
     }
 
     @Override
-    public void saveGroupNotification(GroupNotification groupNotification) {
-        try {
-            entityManager.getTransaction().begin();
-            entityManager.persist(groupNotification.getId().getNotification());
-            entityManager.persist(groupNotification);
-            entityManager.getTransaction().commit();
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-        }
-    }
-
-    @Override
-    public GroupNotification getGroupNotificationById(Long senderId, Long notificationId) {
-        String sql = "SELECT gn " +
-                "FROM GroupNotification gn " +
-                "WHERE gn.id.notification.id = :notificationId " +
-                " AND gn.id.sender.id = :senderId";
-
-        Query query = entityManager.createQuery(sql);
-        query.setParameter("notificationId", notificationId);
-        query.setParameter("senderId", senderId);
-
-        try {
-            return (GroupNotification) query.getSingleResult();
-        } catch (NoResultException ex) {
-            return null;
-        }
+    public Notification getNotificationById(Long notificationId) {
+        return entityManager.find(Notification.class, notificationId);
     }
 }

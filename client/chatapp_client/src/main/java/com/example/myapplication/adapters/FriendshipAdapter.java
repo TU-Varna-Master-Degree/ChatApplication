@@ -8,25 +8,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.domain.dialogue.ServerRequest;
+import com.example.myapplication.domain.enums.FriendshipState;
+import com.example.myapplication.domain.enums.OperationType;
+import com.example.myapplication.domain.models.Friendship;
+import com.example.myapplication.domain.models.UpdateFriendship;
 import com.example.myapplication.holders.FriendshipViewHolder;
 import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-import domain.client.dialogue.ServerRequest;
-import domain.client.dto.FriendshipDto;
-import domain.client.dto.UpdateFriendshipDto;
-import domain.client.enums.FriendshipState;
-import domain.client.enums.OperationType;
-
 public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipViewHolder> {
 
-    final private List<FriendshipDto> data;
+    final private List<Friendship> data;
     final private Consumer<Long> showMessages;
     final private NetClient client;
-    
-    public FriendshipAdapter(NetClient client ,List<FriendshipDto> data, Consumer<Long> showMessages) {
+
+    public FriendshipAdapter(NetClient client ,List<Friendship> data, Consumer<Long> showMessages) {
         this.data = data;
         this.showMessages = showMessages;
         this.client = client;
@@ -43,19 +42,19 @@ public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull FriendshipViewHolder holder, int position) {
-        FriendshipDto friendship = data.get(position);
+        Friendship friendship = data.get(position);
         holder.setUsernameTv(friendship.getSenderUsername());
 
         if (FriendshipState.ACCEPTED.equals(friendship.getState())) {
             holder.itemView.setOnClickListener((v) -> showMessages.accept(friendship.getGroupId()));
         } else {
             holder.showButtons((newState)-> {
-                ServerRequest<UpdateFriendshipDto> request = new ServerRequest<>(OperationType.UPDATE_FRIENDSHIP);
+                ServerRequest<UpdateFriendship> request = new ServerRequest<>(OperationType.UPDATE_FRIENDSHIP);
                 {
-                    UpdateFriendshipDto updateFriendshipDto = new UpdateFriendshipDto();
-                    updateFriendshipDto.setReceiverId(friendship.getSenderId());
-                    updateFriendshipDto.setFriendshipState(newState);
-                    request.setData(updateFriendshipDto);
+                    UpdateFriendship updateFriendship = new UpdateFriendship();
+                    updateFriendship.setReceiverId(friendship.getSenderId());
+                    updateFriendship.setFriendshipState(newState);
+                    request.setData(updateFriendship);
                 }
                 client.sendRequest(request);
             });
@@ -66,5 +65,4 @@ public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipViewHolder
     public int getItemCount() {
         return data.size();
     }
-
 }

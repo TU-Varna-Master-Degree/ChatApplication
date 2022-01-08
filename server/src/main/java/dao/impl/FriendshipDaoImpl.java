@@ -4,7 +4,7 @@ import config.HibernateConfiguration;
 import dao.FriendshipDao;
 import domain.client.dto.FindFriendDto;
 import domain.client.dto.FriendshipDto;
-import domain.client.enums.FriendshipState;
+import domain.enums.FriendshipState;
 import domain.entities.Friendship;
 import domain.entities.FriendshipId;
 import domain.entities.User;

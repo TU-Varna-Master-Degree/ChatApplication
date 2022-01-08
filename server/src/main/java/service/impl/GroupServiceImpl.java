@@ -6,7 +6,7 @@ import domain.client.dialogue.ServerResponse;
 import domain.client.dto.AddGroupFriendsDto;
 import domain.client.dto.GroupFriendDto;
 import domain.client.dto.GroupDto;
-import domain.client.enums.StatusCode;
+import domain.enums.StatusCode;
 import domain.entities.Group;
 import domain.entities.User;
 import domain.entities.UserGroup;

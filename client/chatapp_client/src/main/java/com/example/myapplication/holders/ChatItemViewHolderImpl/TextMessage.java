@@ -8,10 +8,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.domain.models.Message;
 
 import java.util.function.BiConsumer;
-
-import domain.client.dto.MessageDto;
 
 public class TextMessage extends ImplBase
 {
@@ -82,7 +81,7 @@ public class TextMessage extends ImplBase
     
     private void closeEditor()
     {
-        boolean hasTextChanges = etMessage.getText().toString().equals( tvMessage.getText().toString());
+        boolean hasTextChanges = !etMessage.getText().toString().equals( tvMessage.getText().toString());
         
         if(hasTextChanges)
         {
@@ -104,7 +103,7 @@ public class TextMessage extends ImplBase
     }
     
     @Override
-    public void setMessageContent(MessageDto data)
+    public void setMessageContent(Message data)
     {
         super.setMessageContent(data);
         

@@ -8,10 +8,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.utils.DateTimeUtil;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class GroupViewHolder extends RecyclerView.ViewHolder {
@@ -19,16 +19,12 @@ public class GroupViewHolder extends RecyclerView.ViewHolder {
     private ImageView imageView;
     private TextView usernamesTv;
     private TextView lastDateTv;
-    private DateTimeFormatter shortTimeFormatter;
-    private DateTimeFormatter shortDateFormatter;
 
     public GroupViewHolder(@NonNull View itemView) {
         super(itemView);
         imageView = itemView.findViewById(R.id.item_img);
         usernamesTv = itemView.findViewById(R.id.home_user_tv);
         lastDateTv = itemView.findViewById(R.id.item_tv_date);
-        shortTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-        shortDateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     }
 
     public void setImageView(int userCount) {
@@ -62,11 +58,11 @@ public class GroupViewHolder extends RecyclerView.ViewHolder {
         String dateTimeFormat;
 
         if (lastSendMessageDate == null) {
-            dateTimeFormat = "";
+            dateTimeFormat = "New group";
         } else if (Duration.between(lastSendMessageDate, LocalDateTime.now()).toHours() < 24) {
-            dateTimeFormat = shortTimeFormatter.format(lastSendMessageDate);
+            dateTimeFormat = DateTimeUtil.formatToTime(lastSendMessageDate);
         } else {
-            dateTimeFormat = shortDateFormatter.format(lastSendMessageDate);
+            dateTimeFormat = DateTimeUtil.formatToDate(lastSendMessageDate);
         }
 
         lastDateTv.setText(dateTimeFormat);

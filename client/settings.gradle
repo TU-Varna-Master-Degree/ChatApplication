@@ -1,17 +1,10 @@
-import org.gradle.api.initialization.resolve.RepositoriesMode
-
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
         jcenter() // Warning: this repository is going to shut down soon
     }
 }
-rootProject.name = "My Application"
-
-include ':chatapp_client',
-        ':chatapp_server'
-project(':chatapp_server').projectDir = file('D:\\Data\\Desktop\\Proj\\ChatApplication\\server')
-
+rootProject.name = "Chat Application"
+include ':chatapp_client'

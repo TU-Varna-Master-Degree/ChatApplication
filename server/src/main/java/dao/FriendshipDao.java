@@ -2,7 +2,7 @@ package dao;
 
 import domain.client.dto.FindFriendDto;
 import domain.client.dto.FriendshipDto;
-import domain.client.enums.FriendshipState;
+import domain.enums.FriendshipState;
 import domain.entities.Friendship;
 
 import java.util.List;

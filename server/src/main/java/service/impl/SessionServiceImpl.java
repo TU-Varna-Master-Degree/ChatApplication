@@ -1,8 +1,7 @@
 package service.impl;
 
 import domain.client.dialogue.ServerResponse;
-import domain.client.dto.UserDto;
-import domain.client.enums.StatusCode;
+import domain.enums.StatusCode;
 import service.SessionService;
 
 import java.nio.channels.SelectionKey;

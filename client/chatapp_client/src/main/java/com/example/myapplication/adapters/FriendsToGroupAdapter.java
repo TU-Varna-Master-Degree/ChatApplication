@@ -8,20 +8,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.domain.models.GroupFriend;
 import com.example.myapplication.holders.FriendsToGroupViewHolder;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import domain.client.dto.GroupFriendDto;
-
 public class FriendsToGroupAdapter extends RecyclerView.Adapter<FriendsToGroupViewHolder> {
 
-    final private List<GroupFriendDto> data;
+    final private List<GroupFriend> data;
     final private Set<Long> checkedIds;
 
-    public FriendsToGroupAdapter(List<GroupFriendDto> data) {
+    public FriendsToGroupAdapter(List<GroupFriend> data) {
         this.data = data;
         this.checkedIds = new HashSet<>();
     }
@@ -37,7 +36,7 @@ public class FriendsToGroupAdapter extends RecyclerView.Adapter<FriendsToGroupVi
 
     @Override
     public void onBindViewHolder(@NonNull FriendsToGroupViewHolder holder, int position) {
-        GroupFriendDto friend = data.get(position);
+        GroupFriend friend = data.get(position);
         holder.setUserId(friend.getId());
         holder.setUsername(friend.getUsername());
         holder.itemView.setOnClickListener((v) -> holder.addFriendId(true));

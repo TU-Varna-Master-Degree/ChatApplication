@@ -18,15 +18,12 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 
 import com.example.myapplication.R;
-import com.example.myapplication.models.UserLoginModel;
+import com.example.myapplication.domain.dialogue.ServerRequest;
+import com.example.myapplication.domain.dialogue.ServerResponse;
+import com.example.myapplication.domain.enums.OperationType;
+import com.example.myapplication.domain.enums.StatusCode;
+import com.example.myapplication.domain.models.User;
 import com.example.myapplication.utils.FormRules;
-
-import domain.client.dialogue.ServerRequest;
-import domain.client.dialogue.ServerResponse;
-import domain.client.dto.UserDto;
-import domain.client.enums.OperationType;
-import domain.client.enums.StatusCode;
-
 
 public class LoginActivity extends ChatAppBaseActivity
         implements ActivityResultCallback<ActivityResult>
@@ -45,12 +42,12 @@ public class LoginActivity extends ChatAppBaseActivity
     private ActivityResultLauncher<Intent> startForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             LoginActivity.this);
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        
+
         etUserLoginInput = findViewById(R.id.login_tv_input);
         etPassword = findViewById(R.id.login_tv_password);
         chbRememberMe = findViewById(R.id.login_chb_remember_me);
@@ -61,7 +58,7 @@ public class LoginActivity extends ChatAppBaseActivity
         if (Debug.isDebuggerConnected()) {
             SetDebugInfo();
         }
-        
+
         TextView tvUsernameError = findViewById(R.id.login_error_username);
         TextView tvPasswordError = findViewById(R.id.login_error_password);
 
@@ -79,7 +76,7 @@ public class LoginActivity extends ChatAppBaseActivity
         outState.putString(LOGIN_PASSWORD, etPassword.getText().toString());
         outState.putBoolean(LOGIN_REMEMBER, chbRememberMe.isChecked());
     }
-    
+
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -93,26 +90,25 @@ public class LoginActivity extends ChatAppBaseActivity
         super.onStart();
         TryRememberLogin();
     }
-    
+
     @Override
     public void onActivityResult(ActivityResult result) {
-    
+
     }
-    
+
     private void TryRememberLogin() {
         SharedPreferences pref = getPreferences(Context.MODE_PRIVATE);
         if (!pref.getBoolean(LOGIN_REMEMBER, false)) {
             return;
         }
-        
-        UserLoginModel model = new UserLoginModel(
-                pref.getString(LOGIN_USER_INFO, null),
-                pref.getString(LOGIN_PASSWORD, null)
-        );
-        
+
+        User model = new User();
+        model.setUsername(pref.getString(LOGIN_USER_INFO, null));
+        model.setPassword(pref.getString(LOGIN_PASSWORD, null));
+
         RequestLogin(model);
     }
-    
+
     protected void onResponse(ServerResponse response) {
         if (response.getOperationType() == OperationType.USER_LOGIN) {
             CompleteActivity(response);
@@ -121,7 +117,7 @@ public class LoginActivity extends ChatAppBaseActivity
 
     @SuppressLint("SetTextI18n")
     private void SetDebugInfo() {
-        etUserLoginInput.setText("Gosho");
+        etUserLoginInput.setText("DimitarGo");
         etPassword.setText("1111");
     }
 
@@ -131,13 +127,13 @@ public class LoginActivity extends ChatAppBaseActivity
     }
 
     private void DoLogin() {
-        UserLoginModel model;
+        User model;
         if( (model = FetchModel()) != null) {
             RequestLogin(model);
         }
     }
 
-    private UserLoginModel FetchModel() {
+    private User FetchModel() {
         String userInput = etUserLoginInput.getText().toString(),
                 userPassword = etPassword.getText().toString();
 
@@ -150,36 +146,34 @@ public class LoginActivity extends ChatAppBaseActivity
         }
 
         if (isCorrect) {
-            return new UserLoginModel(userInput, userPassword);
+            User user = new User();
+            user.setUsername(userInput);
+            user.setPassword(userPassword);
+            return user;
         } else {
             return null;
         }
     }
 
-    private void RequestLogin(UserLoginModel model) {
-        ServerRequest<UserDto> request = new ServerRequest<>(OperationType.USER_LOGIN);
-
-        UserDto user = new UserDto();
-        user.setUsername(model.getUsername());
-        user.setPassword(model.getPassword());
-        request.setData(user);
-
+    private void RequestLogin(User model) {
+        ServerRequest<User> request = new ServerRequest<>(OperationType.USER_LOGIN);
+        request.setData(model);
         client.sendRequest(request);
     }
-    
+
     private void CompleteActivity(ServerResponse response)
     {
         if(response.getOperationType() != OperationType.USER_LOGIN)
             return;
-        
+
         if ( response.getCode() == StatusCode.SUCCESSFUL)
         {
             SaveConfig();
             setResult(LoginActivity.RESULT_OK);
-            
+
             Intent intent = new Intent(this, HomeActivity.class);
             startActivity( intent );
-            
+
             finish();
         }
         else

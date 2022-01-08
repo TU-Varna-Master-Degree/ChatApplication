@@ -8,17 +8,16 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.domain.enums.FriendshipState;
 
 import java.util.function.Consumer;
 
-import domain.client.enums.FriendshipState;
-
 public class FriendshipViewHolder extends RecyclerView.ViewHolder {
-    
+
     private final TextView usernameTv;
     private final ImageButton acceptButton;
     private final ImageButton rejectButton;
-    
+
     public FriendshipViewHolder(@NonNull View itemView) {
         super(itemView);
         usernameTv = itemView.findViewById(R.id.home_user_tv);
@@ -29,7 +28,7 @@ public class FriendshipViewHolder extends RecyclerView.ViewHolder {
     public void setUsernameTv(String username) {
         usernameTv.setText(username);
     }
-    
+
 
     public void showButtons(Consumer<FriendshipState> changeFriendshipState) {
         acceptButton.setVisibility(View.VISIBLE);
@@ -38,5 +37,3 @@ public class FriendshipViewHolder extends RecyclerView.ViewHolder {
         rejectButton.setOnClickListener((v) -> changeFriendshipState.accept(FriendshipState.REJECTED));
     }
 }
-
-

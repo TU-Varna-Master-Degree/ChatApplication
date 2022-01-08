@@ -1,13 +1,15 @@
 package domain.client.dto;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class GroupUserDto implements Serializable {
+public class GroupUserDto {
 
     private Long id;
     private String username;
     private LocalDateTime joinDate;
+
+    public GroupUserDto() {
+    }
 
     public GroupUserDto(Long id, String username, LocalDateTime joinDate) {
         this.id = id;

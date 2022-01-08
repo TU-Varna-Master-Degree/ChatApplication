@@ -1,17 +1,18 @@
 package domain.client.dto;
 
-import domain.client.enums.MessageType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import domain.enums.MessageType;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class MessageDto implements Serializable {
+public class MessageDto {
 
     private Long notificationId;
     private String content;
     private MessageType messageType;
     private LocalDateTime sendDate;
-    private transient String filePath;
+    @JsonIgnore
+    private String filePath;
     private String fileName;
     private String fileType;
     private byte[] file;

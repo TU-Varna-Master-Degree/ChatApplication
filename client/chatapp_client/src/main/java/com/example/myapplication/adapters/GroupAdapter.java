@@ -8,19 +8,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.domain.models.Group;
 import com.example.myapplication.holders.GroupViewHolder;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-import domain.client.dto.GroupDto;
-
 public class GroupAdapter extends RecyclerView.Adapter<GroupViewHolder> {
 
-    final private List<GroupDto> data;
+    final private List<Group> data;
     final private Consumer<Long> showMessages;
 
-    public GroupAdapter(List<GroupDto> data, Consumer<Long> showMessages) {
+    public GroupAdapter(List<Group> data, Consumer<Long> showMessages) {
         this.data = data;
         this.showMessages = showMessages;
     }
@@ -36,7 +35,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
-        GroupDto group = data.get(position);
+        Group group = data.get(position);
         holder.setImageView(group.getGroupUsers().size());
         holder.setUsernamesTv(group.getGroupUsers());
         holder.setLastDateTv(group.getLastSendMessageDate());

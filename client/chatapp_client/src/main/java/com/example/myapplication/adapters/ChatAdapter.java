@@ -5,28 +5,29 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.myapplication.domain.enums.ChatItemViewType;
+import com.example.myapplication.domain.enums.MessageType;
+import com.example.myapplication.domain.models.GroupUser;
+import com.example.myapplication.domain.models.Message;
+import com.example.myapplication.domain.models.Notification;
+import com.example.myapplication.holders.ChatItemViewHolderFactory;
 import com.example.myapplication.holders.ChatItemViewHolderImpl.ChatItemViewHolderImpl;
-import com.example.myapplication.holders.ChatItemViewHolderImpl.ChatItemViewType;
 import com.example.myapplication.utils.NetClient;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
 
-import domain.client.dto.GroupUserDto;
-import domain.client.dto.MessageDto;
-import domain.client.dto.NotificationDto;
-import domain.client.enums.MessageType;
-
 public class ChatAdapter extends RecyclerView.Adapter
 {
-    final private NotificationDto notifications;
-    final private List<GroupUserDto> users;
-    final private List<MessageDto> messages;
+    final private Notification notifications;
+    final private List<GroupUser> users;
+    final private List<Message> messages;
     final private ChatItemViewHolderFactory factory;
-    Consumer<MessageDto> cb;
-    
+    Consumer<Message> cb;
+
     // SortedSet
-    public ChatAdapter(NotificationDto dto, NetClient client, Consumer<MessageDto> cb)
+    public ChatAdapter(Notification dto, NetClient client, Consumer<Message> cb)
     {
         this.notifications = dto;
         this.users = notifications.getUsers();
@@ -34,8 +35,8 @@ public class ChatAdapter extends RecyclerView.Adapter
         this.factory = new ChatItemViewHolderFactory(client);
         this.cb = cb;
     }
-    
-    private boolean impl_detail_is_image(MessageDto msg)
+
+    private boolean impl_detail_is_image(Message msg)
     {
         return true;
     }
@@ -43,7 +44,7 @@ public class ChatAdapter extends RecyclerView.Adapter
     @Override
     public int getItemViewType(int position)
     {
-        MessageDto msg = messages.get(position);
+        Message msg = messages.get(position);
         if( isMessageSentByRecipient(msg) )
         {
             switch(msg.getMessageType())
@@ -58,7 +59,7 @@ public class ChatAdapter extends RecyclerView.Adapter
                     }
                     return ChatItemViewType.VIEW_TYPE_POV_FILE.getValue();
                 }
-                
+
             }
         }
         else
@@ -75,7 +76,7 @@ public class ChatAdapter extends RecyclerView.Adapter
                     }
                     return ChatItemViewType.VIEW_TYPE_OTHER_FILE.getValue();
                 }
-                
+
             }
         }
         
@@ -94,14 +95,23 @@ public class ChatAdapter extends RecyclerView.Adapter
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
     {
-        MessageDto dto = messages.get(position);
+        Message message = messages.get(position);
         ChatItemViewHolderImpl binder = (ChatItemViewHolderImpl) holder;
-        binder.setMessageContent(dto);
-        binder.setUsername(dto.getUsername());
-        
-        if(dto.getMessageType() == MessageType.FILE)
+        binder.setMessageContent(message);
+        binder.setUsername(message.getUsername());
+
+        LocalDate sendMessageDate = message.getSendDate().toLocalDate();
+        if (position != 0 && messages.get(position - 1).getSendDate().toLocalDate().compareTo(sendMessageDate) >= 0) {
+            binder.hideDate();
+        }
+
+//        if (message.isOwner()) {
+//            binder.installEditModeBehaviour();
+//        }
+
+        if(message.getMessageType() == MessageType.FILE)
         {
-            holder.itemView.setOnClickListener((v) ->  cb.accept(dto) );
+            holder.itemView.setOnClickListener((v) ->  cb.accept(message) );
         }
     }
     
@@ -112,13 +122,13 @@ public class ChatAdapter extends RecyclerView.Adapter
     }
     
     
-    public void insert(MessageDto msg)
+    public void insert(Message msg)
     {
         messages.add( msg );
         notifyItemInserted(messages.size() - 1);
     }
     
-    public void update(MessageDto data)
+    public void update(Message data)
     {
         int index = impl_detail_find_and_update_message_list(data);
         if(index == -1)
@@ -126,11 +136,11 @@ public class ChatAdapter extends RecyclerView.Adapter
         notifyItemChanged(index);
     }
     
-    private int impl_detail_find_and_update_message_list(MessageDto dto)
+    private int impl_detail_find_and_update_message_list(Message dto)
     {
         for(int i = 0; i < messages.size(); i++)
         {
-            MessageDto msg = messages.get(i);
+            Message msg = messages.get(i);
             if(msg.getNotificationId().equals(dto.getNotificationId()))
             {
                 msg.setContent( dto.getContent() );
@@ -141,7 +151,7 @@ public class ChatAdapter extends RecyclerView.Adapter
         return -1;
     }
     
-    private boolean isMessageSentByRecipient(MessageDto msg)
+    private boolean isMessageSentByRecipient(Message msg)
     {
         return msg.isOwner();
     };

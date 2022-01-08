@@ -11,14 +11,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.example.myapplication.R;
-import com.example.myapplication.models.UserRegisterModel;
+import com.example.myapplication.domain.dialogue.ServerRequest;
+import com.example.myapplication.domain.dialogue.ServerResponse;
+import com.example.myapplication.domain.enums.OperationType;
+import com.example.myapplication.domain.enums.StatusCode;
+import com.example.myapplication.domain.models.User;
 import com.example.myapplication.utils.FormRules;
-
-import domain.client.dialogue.ServerRequest;
-import domain.client.dialogue.ServerResponse;
-import domain.client.dto.UserDto;
-import domain.client.enums.OperationType;
-import domain.client.enums.StatusCode;
 
 public class RegisterActivity extends ChatAppBaseActivity {
 
@@ -35,7 +33,7 @@ public class RegisterActivity extends ChatAppBaseActivity {
     private TextView tvConfPasswordError;
 
     private FormRules[] rules;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +78,7 @@ public class RegisterActivity extends ChatAppBaseActivity {
         outState.putString(REGISTER_PASSWORD, etPassword.getText().toString());
         outState.putString(REGISTER_CONFIRM_PASSWORD, etConfirmPassword.getText().toString());
     }
-    
+
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -99,14 +97,14 @@ public class RegisterActivity extends ChatAppBaseActivity {
     }
 
     private void DoRegister() {
-        UserRegisterModel model;
+        User model;
         if ((model = FetchFormModel()) != null) {
             RequestRegister(model);
         }
     }
 
     @SuppressLint("SetTextI18n")
-    private UserRegisterModel FetchFormModel() {
+    private User FetchFormModel() {
         String password = etPassword.getText().toString(),
                 confirm_password = etConfirmPassword.getText().toString(),
                 user = etUsername.getText().toString(),
@@ -128,25 +126,22 @@ public class RegisterActivity extends ChatAppBaseActivity {
         }
 
         if (isCorrect) {
-            return new UserRegisterModel(user, mail, password);
+            User model = new User();
+            model.setUsername(user);
+            model.setPassword(password);
+            model.setEmail(mail);
+            return model;
         } else {
             return null;
         }
     }
 
-    private void RequestRegister(UserRegisterModel model) {
-        UserDto user = new UserDto();
-        user.setEmail(model.getEmail());
-        user.setPassword(model.getPassword());
-        user.setUsername(model.getUsername());
-
-        ServerRequest<UserDto> request =
-                new domain.client.dialogue.ServerRequest<>(OperationType.USER_REGISTER);
-        request.setData(user);
-
+    private void RequestRegister(User model) {
+        ServerRequest<User> request = new ServerRequest<>(OperationType.USER_REGISTER);
+        request.setData(model);
         client.sendRequest(request);
     }
-    
+
     @Override
     protected void onResponse(ServerResponse response) {
         if (response.getOperationType() == OperationType.USER_REGISTER) {

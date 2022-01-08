@@ -1,5 +1,6 @@
 package init;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.FriendshipDao;
 import dao.GroupDao;
 import dao.MessageDao;
@@ -14,19 +15,16 @@ import domain.client.dto.AddGroupFriendsDto;
 import domain.client.dto.SendMessageDto;
 import domain.client.dto.UpdateFriendshipDto;
 import domain.client.dto.UserDto;
-import domain.client.enums.StatusCode;
+import domain.enums.StatusCode;
 import service.*;
 import service.impl.FriendshipServiceImpl;
 import service.impl.GroupServiceImpl;
 import service.impl.NotificationServiceImpl;
 import service.impl.UserServiceImpl;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 import java.util.function.Supplier;
 
 public class HandlerMapping {
@@ -36,9 +34,11 @@ public class HandlerMapping {
     private final GroupService groupService;
     private final NotificationService notificationService;
     private final SessionService sessionService;
+    private final ObjectMapper objectMapper;
 
-    public HandlerMapping(SessionService sessionService) {
+    public HandlerMapping(SessionService sessionService, ObjectMapper objectMapper) {
         this.sessionService = sessionService;
+        this.objectMapper = objectMapper;
         UserDao userDao = new UserDaoImpl();
         FriendshipDao friendshipDao = new FriendshipDaoImpl();
         GroupDao groupDao = new GroupDaoImpl();
@@ -50,17 +50,17 @@ public class HandlerMapping {
     }
 
     public ServerResponse map(SelectionKey key, ByteBuffer data) {
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(data.array()))) {
-            ServerRequest request = (ServerRequest) objectInputStream.readObject();
+        try {
+            ServerRequest request = objectMapper.readValue(data.array(), ServerRequest.class);
             Long userId = sessionService.getCurrentUserId(key);
             ServerResponse serverResponse;
 
             switch (request.getOperationType()) {
                 case USER_REGISTER:
-                    serverResponse = userService.register((UserDto) request.getData());
+                    serverResponse = userService.register(getData(request, UserDto.class));
                     break;
                 case USER_LOGIN:
-                    serverResponse = userService.login((UserDto) request.getData());
+                    serverResponse = userService.login(getData(request, UserDto.class));
                     sessionService.createSession(serverResponse, key);
                     break;
                 case FRIENDSHIP_LIST:
@@ -69,15 +69,15 @@ public class HandlerMapping {
                     break;
                 case CREATE_FRIENDSHIP:
                     serverResponse = authorize(() ->
-                            friendshipService.createFriendship(userId, (Long) request.getData()), key);
+                            friendshipService.createFriendship(userId, getData(request, Long.class)), key);
                     break;
                 case UPDATE_FRIENDSHIP:
                     serverResponse = authorize(() ->
-                            friendshipService.updateFriendship(userId, (UpdateFriendshipDto) request.getData()), key);
+                            friendshipService.updateFriendship(userId, getData(request, UpdateFriendshipDto.class)), key);
                     break;
                 case FIND_FRIENDS:
                     serverResponse = authorize(() ->
-                            friendshipService.findFriends(userId, (String) request.getData()), key);
+                            friendshipService.findFriends(userId, getData(request, String.class)), key);
                     break;
                 case USER_GROUPS:
                     serverResponse = authorize(() ->
@@ -85,23 +85,23 @@ public class HandlerMapping {
                     break;
                 case GROUP_FRIENDS_LIST:
                     serverResponse = authorize(() ->
-                            groupService.getGroupFriends(userId, (Long) request.getData()), key);
+                            groupService.getGroupFriends(userId, getData(request, Long.class)), key);
                     break;
                 case ADD_GROUP_FRIENDS:
                     serverResponse = authorize(() ->
-                            groupService.addUsersToGroup(userId, (AddGroupFriendsDto) request.getData()), key);
+                            groupService.addUsersToGroup(userId, getData(request, AddGroupFriendsDto.class)), key);
                     break;
                 case GROUP_NOTIFICATIONS:
                     serverResponse = authorize(() ->
-                            notificationService.getGroupNotifications(userId, (Long) request.getData()), key);
+                            notificationService.getGroupNotifications(userId, getData(request, Long.class)), key);
                     break;
                 case CREATE_NOTIFICATION:
                     serverResponse = authorize(() ->
-                            notificationService.createMessage(userId, (SendMessageDto) request.getData()), key);
+                            notificationService.createMessage(userId, getData(request, SendMessageDto.class)), key);
                     break;
                 case EDIT_NOTIFICATION:
                     serverResponse = authorize(() ->
-                            notificationService.editMessage(userId, (SendMessageDto) request.getData()), key);
+                            notificationService.editMessage(userId, getData(request, SendMessageDto.class)), key);
                     break;
                 default:
                     serverResponse = new ServerResponse(StatusCode.FAILED, "Operation not found!");
@@ -110,9 +110,13 @@ public class HandlerMapping {
 
             serverResponse.setOperationType(request.getOperationType());
             return serverResponse;
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             return new ServerResponse(StatusCode.SERVER_EXCEPTION, "Something went wrong!");
         }
+    }
+
+    private <T> T getData(ServerRequest responseDate, Class<T> tClass) {
+        return objectMapper.convertValue(responseDate.getData(), tClass);
     }
 
     private ServerResponse authorize(Supplier<ServerResponse> action, SelectionKey key) {

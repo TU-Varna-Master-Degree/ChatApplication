@@ -4,7 +4,7 @@ import config.HibernateConfiguration;
 import dao.GroupDao;
 import domain.client.dto.GroupFriendDto;
 import domain.client.dto.GroupUserDto;
-import domain.client.enums.FriendshipState;
+import domain.enums.FriendshipState;
 import domain.entities.Group;
 
 import javax.persistence.EntityManager;
@@ -21,14 +21,14 @@ public class GroupDaoImpl implements GroupDao {
 
     public List<Object[]> getUserGroups(Long userId) {
         String sql = "SELECT og," +
-                "   (SELECT MAX(gn.id.notification.sendDate) FROM og.groupNotifications gn) as lastSendMessageDate" +
+                "   (SELECT MAX(n.sendDate) FROM og.notifications n) as lastSendMessageDate" +
                 " FROM Group og " +
                 " WHERE og.id in " +
                 "  (SELECT g2.id.group.id FROM UserGroup g1 " +
                 "    JOIN UserGroup g2 ON g1.id.group.id = g2.id.group.id " +
                 "     WHERE g1.id.user.id = :userId" +
                 "    GROUP BY g2.id.group.id) " +
-                "  AND ((SIZE(og.userGroups) = 2 AND SIZE(og.groupNotifications) > 0) " +
+                "  AND ((SIZE(og.userGroups) = 2 AND SIZE(og.notifications) > 0) " +
                 "    OR SIZE(og.userGroups) > 2) " +
                 "ORDER BY lastSendMessageDate DESC";
 

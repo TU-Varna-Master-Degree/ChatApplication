@@ -7,11 +7,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.example.myapplication.R;
+import com.example.myapplication.domain.models.Message;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
-import domain.client.dto.MessageDto;
 
 public class ImageMessage extends FileMessage
 {
@@ -34,8 +33,10 @@ public class ImageMessage extends FileMessage
     }
     
     @Override
-    public void setMessageContent(MessageDto data)
+    public void setMessageContent(Message data)
     {
+        layout.removeView(preview);
+
         super.setMessageContent(data);
         try{
             Bitmap bmp = BitmapFactory.decodeByteArray(data.getFile(), 0, data.getFile().length);

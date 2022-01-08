@@ -1,6 +1,6 @@
 package domain.entities;
 
-import domain.client.enums.FriendshipState;
+import domain.enums.FriendshipState;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

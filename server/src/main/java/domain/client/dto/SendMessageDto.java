@@ -1,10 +1,8 @@
 package domain.client.dto;
 
-import domain.client.enums.MessageType;
+import domain.enums.MessageType;
 
-import java.io.Serializable;
-
-public class SendMessageDto implements Serializable {
+public class SendMessageDto {
 
     private Long messageId;
     private Long groupId;

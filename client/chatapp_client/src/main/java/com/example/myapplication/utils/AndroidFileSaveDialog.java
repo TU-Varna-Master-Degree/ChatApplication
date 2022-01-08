@@ -9,19 +9,19 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
+import com.example.myapplication.domain.models.Message;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
-
-import domain.client.dto.MessageDto;
 
 public class AndroidFileSaveDialog implements ActivityResultCallback<Uri>
 {
     private final ActivityResultLauncher<String> launcher;
     private final Consumer<Uri> onFileSaveCallback;
     private final ComponentActivity activity;
-    private MessageDto data;
+    private Message data;
     
     public AndroidFileSaveDialog(ComponentActivity activity, Consumer<Uri> onFileSaveCallback)
     {
@@ -30,7 +30,7 @@ public class AndroidFileSaveDialog implements ActivityResultCallback<Uri>
         this.activity = activity;
     }
     
-    public void openModalSaveAs( MessageDto data )
+    public void openModalSaveAs( Message data )
     {
         // TODO: Downloaded source MsgDto???
         this.data = data;

@@ -15,8 +15,8 @@ public class Group extends Identity {
     @Column(name = "creation_date", nullable = false)
     private LocalDateTime creationDate;
 
-    @OneToMany(targetEntity = GroupNotification.class, mappedBy = "group")
-    private List<GroupNotification> groupNotifications;
+    @OneToMany(targetEntity = Notification.class, mappedBy = "group")
+    private List<Notification> notifications;
 
     @OneToMany(targetEntity = UserGroup.class, mappedBy = "id.group", cascade = CascadeType.PERSIST)
     private List<UserGroup> userGroups;
@@ -37,12 +37,12 @@ public class Group extends Identity {
         this.creationDate = creationDate;
     }
 
-    public List<GroupNotification> getGroupNotifications() {
-        return groupNotifications;
+    public List<Notification> getNotifications() {
+        return notifications;
     }
 
-    public void setGroupNotifications(List<GroupNotification> groupNotifications) {
-        this.groupNotifications = groupNotifications;
+    public void setNotifications(List<Notification> notifications) {
+        this.notifications = notifications;
     }
 
     public List<UserGroup> getUserGroups() {

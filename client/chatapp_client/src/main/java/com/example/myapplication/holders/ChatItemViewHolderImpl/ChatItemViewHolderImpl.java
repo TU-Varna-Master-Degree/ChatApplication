@@ -1,9 +1,12 @@
 package com.example.myapplication.holders.ChatItemViewHolderImpl;
 
-import domain.client.dto.MessageDto;
+import com.example.myapplication.domain.models.Message;
 
-public interface ChatItemViewHolderImpl
-{
-    void setMessageContent(MessageDto data);
+public interface ChatItemViewHolderImpl {
+
+    void hideDate();
+
+    void setMessageContent(Message data);
+
     void setUsername(String user);
 }

@@ -1,10 +1,8 @@
 package domain.client.dto;
 
-import domain.client.enums.FriendshipState;
+import domain.enums.FriendshipState;
 
-import java.io.Serializable;
-
-public class FriendshipDto implements Serializable {
+public class FriendshipDto {
 
     private Long groupId;
 
@@ -13,6 +11,9 @@ public class FriendshipDto implements Serializable {
     private String senderUsername;
 
     private FriendshipState state;
+
+    public FriendshipDto() {
+    }
 
     public FriendshipDto(Long groupId, Long senderId, String senderUsername, FriendshipState state) {
         this.groupId = groupId;

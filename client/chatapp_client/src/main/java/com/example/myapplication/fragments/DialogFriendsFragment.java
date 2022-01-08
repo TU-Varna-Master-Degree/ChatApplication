@@ -15,17 +15,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.adapters.FriendsToGroupAdapter;
+import com.example.myapplication.domain.dialogue.ServerRequest;
+import com.example.myapplication.domain.enums.OperationType;
+import com.example.myapplication.domain.models.AddGroupFriends;
+import com.example.myapplication.domain.models.GroupFriend;
 import com.example.myapplication.utils.NetClient;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import domain.client.dialogue.ServerRequest;
-import domain.client.dto.AddGroupFriendsDto;
-import domain.client.dto.GroupFriendDto;
-import domain.client.enums.OperationType;
 
 public class DialogFriendsFragment extends DialogFragment {
 
@@ -34,16 +33,16 @@ public class DialogFriendsFragment extends DialogFragment {
 
     private Long groupId;
     private final NetClient client;
-    
+
     public DialogFriendsFragment(NetClient client) {
         this.client = client;
     }
 
-    public static DialogFriendsFragment newInstance(NetClient client, Long groupId, ArrayList<GroupFriendDto> friends) {
+    public static DialogFriendsFragment newInstance(NetClient client, Long groupId, List<GroupFriend> friends) {
         DialogFriendsFragment fragment = new DialogFriendsFragment(client);
         Bundle args = new Bundle();
         args.putLong(GROUP_ID, groupId);
-        args.putSerializable(FRIENDS_ID, friends);
+        args.putSerializable(FRIENDS_ID, new ArrayList<>(friends));
         fragment.setArguments(args);
         return fragment;
     }
@@ -62,7 +61,7 @@ public class DialogFriendsFragment extends DialogFragment {
         Button btnOk = view.findViewById(R.id.dialog_ok_tv);
 
         groupId = getArguments().getLong(GROUP_ID);
-        List<GroupFriendDto> friends = (List<GroupFriendDto>) getArguments().getSerializable(FRIENDS_ID);
+        List<GroupFriend> friends = (List<GroupFriend>) getArguments().getSerializable(FRIENDS_ID);
 
         FriendsToGroupAdapter adapter = new FriendsToGroupAdapter(friends);
         friendsRv.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -77,13 +76,11 @@ public class DialogFriendsFragment extends DialogFragment {
         if (checkedIds.size() == 0) {
             Toast.makeText(getActivity(), "Please, select at least one friend!", Toast.LENGTH_LONG).show();
         } else {
-            ServerRequest<AddGroupFriendsDto> request = new ServerRequest<>(OperationType.ADD_GROUP_FRIENDS);
-            {
-                AddGroupFriendsDto addGroupFriendsDto = new AddGroupFriendsDto();
-                addGroupFriendsDto.setGroupId(groupId);
-                addGroupFriendsDto.setUserIds(checkedIds);
-                request.setData(addGroupFriendsDto);
-            }
+            ServerRequest<AddGroupFriends> request = new ServerRequest<>(OperationType.ADD_GROUP_FRIENDS);
+            AddGroupFriends addGroupFriends = new AddGroupFriends();
+            addGroupFriends.setGroupId(groupId);
+            addGroupFriends.setUserIds(checkedIds);
+            request.setData(addGroupFriends);
             client.sendRequest(request);
             dismiss();
         }

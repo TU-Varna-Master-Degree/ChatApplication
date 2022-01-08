@@ -1,12 +1,13 @@
 package domain.client.dto;
 
-import java.io.Serializable;
-
-public class GroupFriendDto implements Serializable {
+public class GroupFriendDto {
 
     private Long id;
 
     private String username;
+
+    public GroupFriendDto() {
+    }
 
     public GroupFriendDto(long id, String username) {
         this.id = id;

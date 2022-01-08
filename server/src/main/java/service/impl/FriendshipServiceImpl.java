@@ -1,18 +1,16 @@
 package service.impl;
 
 import dao.FriendshipDao;
-import dao.GroupDao;
 import domain.client.dialogue.ServerResponse;
 import domain.client.dto.FindFriendDto;
 import domain.client.dto.FriendshipDto;
 import domain.client.dto.UpdateFriendshipDto;
-import domain.client.enums.FriendshipState;
-import domain.client.enums.StatusCode;
+import domain.enums.FriendshipState;
+import domain.enums.StatusCode;
 import domain.entities.Friendship;
 import domain.entities.Group;
 import service.FriendshipService;
 import service.GroupService;
-import service.SessionService;
 
 import java.util.Arrays;
 import java.util.List;

@@ -24,16 +24,17 @@ import com.example.myapplication.R;
 import com.example.myapplication.adapters.FriendshipAdapter;
 import com.example.myapplication.adapters.GroupAdapter;
 import com.example.myapplication.adapters.UserAdapter;
+import com.example.myapplication.domain.dialogue.ServerRequest;
+import com.example.myapplication.domain.dialogue.ServerResponse;
+import com.example.myapplication.domain.enums.OperationType;
+import com.example.myapplication.domain.enums.StatusCode;
+import com.example.myapplication.domain.models.FindFriend;
+import com.example.myapplication.domain.models.Friendship;
+import com.example.myapplication.domain.models.Group;
+import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
-
-import domain.client.dialogue.ServerRequest;
-import domain.client.dialogue.ServerResponse;
-import domain.client.dto.FindFriendDto;
-import domain.client.dto.FriendshipDto;
-import domain.client.dto.GroupDto;
-import domain.client.enums.OperationType;
-import domain.client.enums.StatusCode;
+import java.util.function.Consumer;
 
 public class HomeActivity extends ChatAppBaseActivity
         implements ActivityResultCallback<ActivityResult> {
@@ -44,13 +45,13 @@ public class HomeActivity extends ChatAppBaseActivity
     private Spinner cb;
     private UserAdapter usersAdapter;
     private ActivityResultLauncher<Intent> startForResult;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chatapp_home_activity);
-        
+
         searchView = findViewById(R.id.home_search);
         searchViewText = findViewById(R.id.home_search_tv);
         view = findViewById(R.id.home_lst_feed);
@@ -71,14 +72,14 @@ public class HomeActivity extends ChatAppBaseActivity
             new ActivityResultContracts.StartActivityForResult(),
             this);
     }
-    
+
     @Override
     protected void onResponse(ServerResponse response) {
         runOnUiThread(() -> {
             if (OperationType.USER_GROUPS.equals(response.getOperationType())) {
-                loadGroups((List<GroupDto>) response.getData());
+                loadGroups(client.getDataList(response, Group.class));
             } else if (OperationType.FRIENDSHIP_LIST.equals(response.getOperationType())) {
-                loadFriends((List<FriendshipDto>) response.getData());
+                loadFriends(client.getDataList(response, Friendship.class));
             } else if (OperationType.UPDATE_FRIENDSHIP.equals(response.getOperationType())) {
                 Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                 client.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
@@ -86,30 +87,30 @@ public class HomeActivity extends ChatAppBaseActivity
                 if (StatusCode.FAILED.equals(response.getCode())) {
                     Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                 } else if (StatusCode.SUCCESSFUL.equals(response.getCode())) {
-                    loadUsers((List<FindFriendDto>) response.getData());
+                    loadUsers(client.getDataList(response, FindFriend.class));
                 }
             } else if (OperationType.CREATE_FRIENDSHIP.equals(response.getOperationType())) {
                 Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                 if (usersAdapter != null) {
-                    usersAdapter.removeUserById((Long) response.getData());
+                    usersAdapter.removeUserById(client.getData(response, Long.class));
                 }
             }
         });
     }
 
-    private void loadGroups(List<GroupDto> groups) {
+    private void loadGroups(List<Group> groups) {
         GroupAdapter listAdapter = new GroupAdapter(groups, this::showUserGroupMessages);
         view.setLayoutManager(new LinearLayoutManager(this));
         view.setAdapter(listAdapter);
     }
 
-    private void loadFriends(List<FriendshipDto> friendships) {
+    private void loadFriends(List<Friendship> friendships) {
         FriendshipAdapter listAdapter = new FriendshipAdapter(client, friendships, this::showUserGroupMessages);
         view.setLayoutManager(new LinearLayoutManager(this));
         view.setAdapter(listAdapter);
     }
 
-    private void loadUsers(List<FindFriendDto> users) {
+    private void loadUsers(List<FindFriend> users) {
         usersAdapter = new UserAdapter(users, client);
         view.setLayoutManager(new LinearLayoutManager(this));
         view.setAdapter(usersAdapter);

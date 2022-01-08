@@ -1,14 +1,15 @@
 package domain.client.dialogue;
 
-import domain.client.enums.OperationType;
+import domain.enums.OperationType;
 
-import java.io.Serializable;
-
-public class ServerRequest<T> implements Serializable {
+public class ServerRequest<T> {
 
     private OperationType operationType;
 
     private T data;
+
+    public ServerRequest() {
+    }
 
     public ServerRequest(OperationType operationType) {
         this.operationType = operationType;
