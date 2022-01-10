@@ -11,6 +11,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.utils.DateTimeUtil;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class GroupViewHolder extends RecyclerView.ViewHolder {
                 sb.append(", ");
             }
 
-            if (sb.length() + username.length() > 27) {
+            if (sb.length() + username.length() > 25) {
                 sb.append("...");
                 break;
             } else {
@@ -59,7 +60,7 @@ public class GroupViewHolder extends RecyclerView.ViewHolder {
 
         if (lastSendMessageDate == null) {
             dateTimeFormat = "New group";
-        } else if (Duration.between(lastSendMessageDate, LocalDateTime.now()).toHours() < 24) {
+        } else if (lastSendMessageDate.compareTo(LocalDate.now().atStartOfDay()) > 0) {
             dateTimeFormat = DateTimeUtil.formatToTime(lastSendMessageDate);
         } else {
             dateTimeFormat = DateTimeUtil.formatToDate(lastSendMessageDate);

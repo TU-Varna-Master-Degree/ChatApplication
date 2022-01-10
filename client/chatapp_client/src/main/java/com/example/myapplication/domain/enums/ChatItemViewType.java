@@ -1,26 +1,16 @@
 package com.example.myapplication.domain.enums;
 
-public enum ChatItemViewType
-{
-    VIEW_TYPE_POV_TEXT( 0x0 ),
-    VIEW_TYPE_POV_FILE( 0x1 ),
-    VIEW_TYPE_POV_IMAGE( 0x2 ),
-    VIEW_TYPE_OTHER_TEXT( 0x3 ),
-    VIEW_TYPE_OTHER_FILE( 0x4 ),
-    VIEW_TYPE_OTHER_IMAGE( 0x5 );
+public enum ChatItemViewType {
 
+    POV_TEXT,
+    POV_FILE,
+    POV_IMAGE,
+    OTHER_TEXT,
+    OTHER_FILE,
+    OTHER_IMAGE,
+    USER_JOIN;
 
-    private final int value;
-    ChatItemViewType(int value)
-    {
-        this.value = value;
+    public boolean isOwnerPov() {
+        return this == POV_TEXT || this == POV_FILE || this == POV_IMAGE;
     }
-
-    public int getValue() { return value; }
-
-    public static boolean isOwnerPov(ChatItemViewType flag)
-    {
-        return flag == VIEW_TYPE_POV_TEXT || flag == VIEW_TYPE_POV_FILE || flag == VIEW_TYPE_POV_IMAGE;
-    }
-
 }

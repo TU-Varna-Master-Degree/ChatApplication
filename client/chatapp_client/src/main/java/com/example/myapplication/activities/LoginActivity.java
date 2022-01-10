@@ -25,7 +25,7 @@ import com.example.myapplication.domain.enums.StatusCode;
 import com.example.myapplication.domain.models.User;
 import com.example.myapplication.utils.FormRules;
 
-public class LoginActivity extends ChatAppBaseActivity
+public class LoginActivity extends BaseActivity
         implements ActivityResultCallback<ActivityResult>
 {
 
@@ -158,7 +158,7 @@ public class LoginActivity extends ChatAppBaseActivity
     private void RequestLogin(User model) {
         ServerRequest<User> request = new ServerRequest<>(OperationType.USER_LOGIN);
         request.setData(model);
-        client.sendRequest(request);
+        getNetClient().sendRequest(request);
     }
 
     private void CompleteActivity(ServerResponse response)

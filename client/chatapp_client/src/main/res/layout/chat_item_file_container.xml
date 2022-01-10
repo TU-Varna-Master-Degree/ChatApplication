@@ -17,7 +17,12 @@
             android:id="@+id/chat_item_file_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/teal_200"
+            android:paddingLeft="12dp"
+            android:paddingTop="4dp"
+            android:paddingRight="12dp"
+            android:paddingBottom="4dp"
+            android:textColor="@color/blue"
+            android:textSize="16sp"
             tools:text="SomeFileName.txt" />
 
     </androidx.cardview.widget.CardView>

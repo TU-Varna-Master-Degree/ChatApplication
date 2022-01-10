@@ -18,7 +18,7 @@ import com.example.myapplication.domain.enums.StatusCode;
 import com.example.myapplication.domain.models.User;
 import com.example.myapplication.utils.FormRules;
 
-public class RegisterActivity extends ChatAppBaseActivity {
+public class RegisterActivity extends BaseActivity {
 
     static final String REGISTER_USER_NAME = "REGISTER_USER_NAME";
     static final String REGISTER_EMAIL = "REGISTER_EMAIL";
@@ -139,7 +139,7 @@ public class RegisterActivity extends ChatAppBaseActivity {
     private void RequestRegister(User model) {
         ServerRequest<User> request = new ServerRequest<>(OperationType.USER_REGISTER);
         request.setData(model);
-        client.sendRequest(request);
+        getNetClient().sendRequest(request);
     }
 
     @Override

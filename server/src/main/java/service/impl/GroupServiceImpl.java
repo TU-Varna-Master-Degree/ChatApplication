@@ -3,29 +3,34 @@ package service.impl;
 import dao.GroupDao;
 import dao.UserDao;
 import domain.client.dialogue.ServerResponse;
-import domain.client.dto.AddGroupFriendsDto;
-import domain.client.dto.GroupFriendDto;
-import domain.client.dto.GroupDto;
+import domain.client.dto.*;
+import domain.enums.OperationType;
 import domain.enums.StatusCode;
 import domain.entities.Group;
 import domain.entities.User;
 import domain.entities.UserGroup;
 import domain.entities.UserGroupId;
 import service.GroupService;
+import service.SessionService;
 
+import java.nio.channels.SocketChannel;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static init.DispatcherSocket.sendResponse;
+
 public class GroupServiceImpl implements GroupService {
 
     private final GroupDao groupDao;
     private final UserDao userDao;
+    private final SessionService sessionService;
 
-    public GroupServiceImpl(GroupDao groupDao, UserDao userDao) {
+    public GroupServiceImpl(GroupDao groupDao, UserDao userDao, SessionService sessionService) {
         this.groupDao = groupDao;
         this.userDao = userDao;
+        this.sessionService = sessionService;
     }
 
     @Override
@@ -109,9 +114,27 @@ public class GroupServiceImpl implements GroupService {
         addUsersToGroup(group, users, creationDateTime);
         groupDao.save(group);
 
-        ServerResponse<Long> response = new ServerResponse<>(StatusCode.SUCCESSFUL, "You have successfully added the new members of the group!");
-        response.setData(group.getId());
-        return response;
+        List<GroupUserDto> groupUsers = createGroupUsers(users, creationDateTime);
+        NewUsersToGroupDto newUsersToGroupDto = new NewUsersToGroupDto();
+        newUsersToGroupDto.setOldGroupId(addGroupFriendsDto.getGroupId());
+        newUsersToGroupDto.setNewGroupId(group.getId());
+        newUsersToGroupDto.setNewUsers(groupUsers);
+
+        ServerResponse<NewUsersToGroupDto> response = new ServerResponse<>(StatusCode.SUCCESSFUL);
+        response.setOperationType(OperationType.ADD_GROUP_FRIENDS);
+        response.setData(newUsersToGroupDto);
+        sendNewUsersToGroup(group.getUserGroups(), response);
+        return new ServerResponse(StatusCode.EMPTY);
+    }
+
+    private List<GroupUserDto> createGroupUsers(List<User> users, LocalDateTime creationDateTime) {
+        return users.stream().map(u -> {
+            GroupUserDto groupUserDto = new GroupUserDto();
+            groupUserDto.setId(u.getId());
+            groupUserDto.setUsername(u.getUsername());
+            groupUserDto.setJoinDate(creationDateTime);
+            return groupUserDto;
+        }).collect(Collectors.toList());
     }
 
     private void addUsersToGroup(Group group, List<User> users, LocalDateTime creationDateTime) {
@@ -126,5 +149,14 @@ public class GroupServiceImpl implements GroupService {
 
             group.getUserGroups().add(userGroup);
         }
+    }
+
+    private void sendNewUsersToGroup(List<UserGroup> userGroups, ServerResponse<NewUsersToGroupDto> serverResponse) {
+        userGroups.forEach(ug -> {
+            SocketChannel channel = sessionService.getChannelById(ug.getId().getUser().getId());
+            if (channel != null) {
+                sendResponse(channel, serverResponse);
+            }
+        });
     }
 }

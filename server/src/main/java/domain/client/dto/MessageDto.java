@@ -1,6 +1,5 @@
 package domain.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import domain.enums.MessageType;
 
 import java.time.LocalDateTime;
@@ -11,8 +10,6 @@ public class MessageDto {
     private String content;
     private MessageType messageType;
     private LocalDateTime sendDate;
-    @JsonIgnore
-    private String filePath;
     private String fileName;
     private String fileType;
     private byte[] file;
@@ -24,13 +21,12 @@ public class MessageDto {
     public MessageDto() {
     }
 
-    public MessageDto(Long notificationId, String content, MessageType messageType, LocalDateTime sendDate, String filePath,
+    public MessageDto(Long notificationId, String content, MessageType messageType, LocalDateTime sendDate,
                       String fileName, String fileType, Long userId, String username, Boolean isOwner, Long groupId) {
         this.notificationId = notificationId;
         this.content = content;
         this.messageType = messageType;
         this.sendDate = sendDate;
-        this.filePath = filePath;
         this.fileName = fileName;
         this.fileType = fileType;
         this.userId = userId;
@@ -69,14 +65,6 @@ public class MessageDto {
 
     public void setSendDate(LocalDateTime sendDate) {
         this.sendDate = sendDate;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
     }
 
     public String getFileName() {

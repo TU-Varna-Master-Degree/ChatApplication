@@ -58,6 +58,10 @@ public class NetClient {
         executorService.shutdown();
         server.close();
     }
+
+    public void executeTask(Runnable runnable) {
+        executorService.execute(runnable);
+    }
     
     public void sendRequest(ServerRequest serverRequest) {
         executorService.execute(() -> send(serverRequest));

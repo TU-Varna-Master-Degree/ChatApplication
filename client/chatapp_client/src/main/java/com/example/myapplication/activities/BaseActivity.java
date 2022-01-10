@@ -10,40 +10,33 @@ import com.example.myapplication.utils.NetClient;
 
 import java.util.function.Consumer;
 
-public class ChatAppBaseActivity extends AppCompatActivity
-{
-    protected NetClient client;
+public abstract class BaseActivity extends AppCompatActivity {
+
+    private NetClient client;
     private Consumer<ServerResponse> handler;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         client = ((ChatApplication) getApplication()).getNetClient();
         handler = this::onResponse;
     }
-    
+
     @Override
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
         client.register(handler);
     }
-    
+
     @Override
-    protected void onStop()
-    {
+    protected void onStop() {
         super.onStop();
         client.unregister(handler);
     }
-    
-    protected void onResponse(ServerResponse response)
-    {
-    
-    }
-    
-    protected NetClient getNetClient()
-    {
+
+    protected abstract void onResponse(ServerResponse response);
+
+    protected NetClient getNetClient() {
         return client;
     }
 }

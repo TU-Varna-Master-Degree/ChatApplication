@@ -10,4 +10,6 @@ public interface NotificationService {
     public ServerResponse createMessage(Long userId, SendMessageDto sendMessageDto);
 
     public ServerResponse editMessage(Long userId, SendMessageDto sendMessageDto);
+
+    public ServerResponse getMessage(Long userId, Long notificationId);
 }

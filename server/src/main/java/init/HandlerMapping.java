@@ -44,7 +44,7 @@ public class HandlerMapping {
         GroupDao groupDao = new GroupDaoImpl();
         MessageDao messageDao = new MessageDaoImpl();
         this.userService = new UserServiceImpl(userDao);
-        this.groupService = new GroupServiceImpl(groupDao, userDao);
+        this.groupService = new GroupServiceImpl(groupDao, userDao, sessionService);
         this.friendshipService = new FriendshipServiceImpl(friendshipDao, groupService);
         this.notificationService = new NotificationServiceImpl(messageDao, groupDao, userDao, sessionService);
     }
@@ -102,6 +102,10 @@ public class HandlerMapping {
                 case EDIT_NOTIFICATION:
                     serverResponse = authorize(() ->
                             notificationService.editMessage(userId, getData(request, SendMessageDto.class)), key);
+                    break;
+                case GET_NOTIFICATION:
+                    serverResponse = authorize(() ->
+                            notificationService.getMessage(userId, getData(request, Long.class)), key);
                     break;
                 default:
                     serverResponse = new ServerResponse(StatusCode.FAILED, "Operation not found!");

@@ -13,48 +13,41 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-public class AndroidFileLoaderDialog
-{
+public class FileLoaderDialog {
+
     private final ActivityResultLauncher launcher;
-    private final Consumer<AndroidLocalFileData> onFileLoadedCallback;
+    private final Consumer<LocalFileData> onFileLoadedCallback;
     private final ComponentActivity activity;
-    
-    public AndroidFileLoaderDialog(ComponentActivity activity, Consumer<AndroidLocalFileData> onFileLoadedCallback)
-    {
+    private final NetClient client;
+
+    public FileLoaderDialog(ComponentActivity activity, Consumer<LocalFileData> onFileLoadedCallback, NetClient client) {
         launcher = activity.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), this::onActivityResult);
         this.onFileLoadedCallback = onFileLoadedCallback;
         this.activity = activity;
+        this.client = client;
     }
-    
-    private void onActivityResult(ActivityResult result)
-    {
-        if(result.getResultCode() == Activity.RESULT_OK && result.getData() != null)
-        {
-            new Thread( () -> this.loadFileAndNotify( result.getData().getData()) ) .start();
-        }
-    }
-    
-    private void loadFileAndNotify(Uri uri)
-    {
-        try
-        {
-            AndroidLocalFileData file = new AndroidLocalFileData(activity, uri );
-            activity.runOnUiThread(()-> onFileLoadedCallback.accept( file ));
-        }
-        catch (IOException e)
-        {
-            activity.runOnUiThread( () -> Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG ));
-        }
-    }
-    
-    public void startModalDialog()
-    {
+
+    public void startModalDialog() {
         Intent intent = new Intent()
                 .setType("*/*")
                 .setAction(Intent.ACTION_GET_CONTENT);
-        
+
         launcher.launch(Intent.createChooser(intent, "Select a file"));
     }
-    
+
+    private void onActivityResult(ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+            client.executeTask(() -> this.loadFileAndNotify(result.getData().getData()));
+        }
+    }
+
+    private void loadFileAndNotify(Uri uri) {
+        try {
+            LocalFileData file = new LocalFileData(activity, uri);
+            activity.runOnUiThread(() -> onFileLoadedCallback.accept(file));
+        } catch (IOException e) {
+            activity.runOnUiThread(() -> Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG));
+        }
+    }
 }

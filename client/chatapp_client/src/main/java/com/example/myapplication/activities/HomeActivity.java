@@ -3,6 +3,7 @@ package com.example.myapplication.activities;
 import static android.widget.AdapterView.OnItemSelectedListener;
 import static android.widget.SearchView.OnQueryTextListener;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -31,12 +32,10 @@ import com.example.myapplication.domain.enums.StatusCode;
 import com.example.myapplication.domain.models.FindFriend;
 import com.example.myapplication.domain.models.Friendship;
 import com.example.myapplication.domain.models.Group;
-import com.example.myapplication.utils.NetClient;
 
 import java.util.List;
-import java.util.function.Consumer;
 
-public class HomeActivity extends ChatAppBaseActivity
+public class HomeActivity extends BaseActivity
         implements ActivityResultCallback<ActivityResult> {
 
     private SearchView searchView;
@@ -55,6 +54,7 @@ public class HomeActivity extends ChatAppBaseActivity
         searchView = findViewById(R.id.home_search);
         searchViewText = findViewById(R.id.home_search_tv);
         view = findViewById(R.id.home_lst_feed);
+        view.setLayoutManager(new LinearLayoutManager(this));
         cb = findViewById(R.id.home_cb_filter);
         
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -77,22 +77,22 @@ public class HomeActivity extends ChatAppBaseActivity
     protected void onResponse(ServerResponse response) {
         runOnUiThread(() -> {
             if (OperationType.USER_GROUPS.equals(response.getOperationType())) {
-                loadGroups(client.getDataList(response, Group.class));
+                loadGroups(getNetClient().getDataList(response, Group.class));
             } else if (OperationType.FRIENDSHIP_LIST.equals(response.getOperationType())) {
-                loadFriends(client.getDataList(response, Friendship.class));
+                loadFriends(getNetClient().getDataList(response, Friendship.class));
             } else if (OperationType.UPDATE_FRIENDSHIP.equals(response.getOperationType())) {
                 Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
-                client.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
+                getNetClient().sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
             } else if (OperationType.FIND_FRIENDS.equals(response.getOperationType())) {
                 if (StatusCode.FAILED.equals(response.getCode())) {
                     Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                 } else if (StatusCode.SUCCESSFUL.equals(response.getCode())) {
-                    loadUsers(client.getDataList(response, FindFriend.class));
+                    loadUsers(getNetClient().getDataList(response, FindFriend.class));
                 }
             } else if (OperationType.CREATE_FRIENDSHIP.equals(response.getOperationType())) {
                 Toast.makeText(HomeActivity.this, response.getMessage(), Toast.LENGTH_LONG).show();
                 if (usersAdapter != null) {
-                    usersAdapter.removeUserById(client.getData(response, Long.class));
+                    usersAdapter.removeUserById(getNetClient().getData(response, Long.class));
                 }
             }
         });
@@ -100,19 +100,16 @@ public class HomeActivity extends ChatAppBaseActivity
 
     private void loadGroups(List<Group> groups) {
         GroupAdapter listAdapter = new GroupAdapter(groups, this::showUserGroupMessages);
-        view.setLayoutManager(new LinearLayoutManager(this));
         view.setAdapter(listAdapter);
     }
 
     private void loadFriends(List<Friendship> friendships) {
-        FriendshipAdapter listAdapter = new FriendshipAdapter(client, friendships, this::showUserGroupMessages);
-        view.setLayoutManager(new LinearLayoutManager(this));
+        FriendshipAdapter listAdapter = new FriendshipAdapter(getNetClient(), friendships, this::showUserGroupMessages);
         view.setAdapter(listAdapter);
     }
 
     private void loadUsers(List<FindFriend> users) {
-        usersAdapter = new UserAdapter(users, client);
-        view.setLayoutManager(new LinearLayoutManager(this));
+        usersAdapter = new UserAdapter(users, getNetClient());
         view.setAdapter(usersAdapter);
     }
 
@@ -121,12 +118,13 @@ public class HomeActivity extends ChatAppBaseActivity
         intent.putExtra(ChatActivity.IN_CHAT_GROUP_ID, groupId);
         
         startForResult.launch(intent);
-        System.out.println(groupId);
     }
 
     @Override
     public void onActivityResult(ActivityResult result) {
-
+        if (result.getResultCode() == Activity.RESULT_CANCELED) {
+            sendCbViewRequest(cb.getSelectedView());
+        }
     }
 
     private final OnItemSelectedListener cbListener = new OnItemSelectedListener() {
@@ -147,7 +145,7 @@ public class HomeActivity extends ChatAppBaseActivity
 
             ServerRequest<String> request = new ServerRequest<>(OperationType.FIND_FRIENDS);
             request.setData(s);
-            client.sendRequest(request);
+            getNetClient().sendRequest(request);
             return true;
         }
 
@@ -160,9 +158,9 @@ public class HomeActivity extends ChatAppBaseActivity
     private void sendCbViewRequest(View view) {
         String text = ((TextView) view).getText().toString();
         if (text.equals("Groups")) {
-            client.sendRequest(new ServerRequest<>(OperationType.USER_GROUPS));
+            getNetClient().sendRequest(new ServerRequest<>(OperationType.USER_GROUPS));
         } else if (text.equals("Friends")) {
-            client.sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
+            getNetClient().sendRequest(new ServerRequest<>(OperationType.FRIENDSHIP_LIST));
         }
     }
 

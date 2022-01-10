@@ -10,150 +10,145 @@ import com.example.myapplication.domain.enums.MessageType;
 import com.example.myapplication.domain.models.GroupUser;
 import com.example.myapplication.domain.models.Message;
 import com.example.myapplication.domain.models.Notification;
-import com.example.myapplication.holders.ChatItemViewHolderFactory;
-import com.example.myapplication.holders.ChatItemViewHolderImpl.ChatItemViewHolderImpl;
+import com.example.myapplication.holders.MessageHolders.MessageHolderFactory;
+import com.example.myapplication.holders.MessageHolders.BaseMessage;
+import com.example.myapplication.utils.FileSaveDialog;
+import com.example.myapplication.utils.DateTimeUtil;
 import com.example.myapplication.utils.NetClient;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
 
-public class ChatAdapter extends RecyclerView.Adapter
-{
-    final private Notification notifications;
-    final private List<GroupUser> users;
-    final private List<Message> messages;
-    final private ChatItemViewHolderFactory factory;
-    Consumer<Message> cb;
+public class ChatAdapter extends RecyclerView.Adapter<BaseMessage> {
 
-    // SortedSet
-    public ChatAdapter(Notification dto, NetClient client, Consumer<Message> cb)
-    {
-        this.notifications = dto;
-        this.users = notifications.getUsers();
-        this.messages = notifications.getMessages();
-        this.factory = new ChatItemViewHolderFactory(client);
-        this.cb = cb;
+    private final Long userId;
+    private final List<GroupUser> users;
+    private final List<Message> messages;
+    private final MessageHolderFactory factory;
+    private final FileSaveDialog saveDialog;
+
+    public ChatAdapter(Notification notification, NetClient client, FileSaveDialog saveDialog) {
+        this.userId = notification.getUserId();
+        this.users = notification.getUsers();
+        this.messages = notification.getMessages();
+        this.factory = new MessageHolderFactory(client);
+        this.saveDialog = saveDialog;
+        this.addUserNotifications();
     }
 
-    private boolean impl_detail_is_image(Message msg)
-    {
-        return true;
-    }
-    
     @Override
-    public int getItemViewType(int position)
-    {
+    public int getItemViewType(int position) {
         Message msg = messages.get(position);
-        if( isMessageSentByRecipient(msg) )
-        {
-            switch(msg.getMessageType())
-            {
-                case TEXT:
-                    return ChatItemViewType.VIEW_TYPE_POV_TEXT.getValue();
-                case FILE:
-                {
-                    if(impl_detail_is_image(msg))
-                    {
-                        return ChatItemViewType.VIEW_TYPE_POV_IMAGE.getValue();
-                    }
-                    return ChatItemViewType.VIEW_TYPE_POV_FILE.getValue();
-                }
 
+        if (msg.getMessageType().equals(MessageType.USER_JOIN)) {
+            return ChatItemViewType.USER_JOIN.ordinal();
+        }
+
+        if (isMessageSentByRecipient(msg)) {
+            switch (msg.getMessageType()) {
+                case TEXT:
+                    return ChatItemViewType.POV_TEXT.ordinal();
+                case FILE:
+                    return ChatItemViewType.POV_FILE.ordinal();
+                case IMAGE:
+                    return ChatItemViewType.POV_IMAGE.ordinal();
+            }
+        } else {
+            switch (msg.getMessageType()) {
+                case TEXT:
+                    return ChatItemViewType.OTHER_TEXT.ordinal();
+                case FILE:
+                    return ChatItemViewType.OTHER_FILE.ordinal();
+                case IMAGE:
+                    return ChatItemViewType.OTHER_IMAGE.ordinal();
             }
         }
-        else
-        {
-            switch(msg.getMessageType())
-            {
-                case TEXT:
-                    return ChatItemViewType.VIEW_TYPE_OTHER_TEXT.getValue();
-                case FILE:
-                {
-                    if(impl_detail_is_image(msg))
-                    {
-                        return ChatItemViewType.VIEW_TYPE_POV_IMAGE.getValue();
-                    }
-                    return ChatItemViewType.VIEW_TYPE_OTHER_FILE.getValue();
-                }
 
-            }
-        }
-        
         // MARK UNREACHABLE
-        assert false;
         return -1;
     }
-    
+
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-    {
-        return factory.create(parent, ChatItemViewType.values()[viewType]);
+    public BaseMessage onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return factory.create(parent, ChatItemViewType.values()[viewType], saveDialog);
     }
-    
+
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position)
-    {
+    public void onBindViewHolder(@NonNull BaseMessage holder, int position) {
         Message message = messages.get(position);
-        ChatItemViewHolderImpl binder = (ChatItemViewHolderImpl) holder;
-        binder.setMessageContent(message);
-        binder.setUsername(message.getUsername());
+        holder.setMessageContent(message);
+        holder.setUsername(message.getUsername());
 
         LocalDate sendMessageDate = message.getSendDate().toLocalDate();
         if (position != 0 && messages.get(position - 1).getSendDate().toLocalDate().compareTo(sendMessageDate) >= 0) {
-            binder.hideDate();
-        }
-
-//        if (message.isOwner()) {
-//            binder.installEditModeBehaviour();
-//        }
-
-        if(message.getMessageType() == MessageType.FILE)
-        {
-            holder.itemView.setOnClickListener((v) ->  cb.accept(message) );
+            holder.hideDate();
         }
     }
-    
+
     @Override
-    public int getItemCount()
-    {
+    public int getItemCount() {
         return messages.size();
     }
-    
-    
-    public void insert(Message msg)
-    {
-        messages.add( msg );
+
+    private void addUserNotifications() {
+        GroupUser currentUser = users.stream()
+            .filter(u -> u.getId().equals(userId))
+            .findFirst()
+            .orElse(null);
+
+        if (currentUser != null) {
+            for (int i = 0; i < users.size(); i++) {
+                GroupUser user = users.get(i);
+                if (currentUser.getJoinDate().compareTo(user.getJoinDate()) >= 0) {
+                    break;
+                }
+                addNewUserMessage(user);
+            }
+
+            messages.sort(Comparator.comparing(Message::getSendDate));
+        }
+    }
+
+    private void addNewUserMessage(GroupUser user) {
+        String joinTime = DateTimeUtil.formatToTime(user.getJoinDate());
+        Message newMessage = new Message();
+        newMessage.setMessageType(MessageType.USER_JOIN);
+        newMessage.setUsername(String.format("%s joined the group at %s.", user.getUsername(), joinTime));
+        newMessage.setSendDate(user.getJoinDate());
+        messages.add(newMessage);
+    }
+
+    public void notifyForNewUserMessage(GroupUser user) {
+        addNewUserMessage(user);
         notifyItemInserted(messages.size() - 1);
     }
-    
-    public void update(Message data)
-    {
-        int index = impl_detail_find_and_update_message_list(data);
-        if(index == -1)
-            return;
-        notifyItemChanged(index);
+
+    public void insert(Message msg) {
+        messages.add(msg);
+        notifyItemInserted(messages.size() - 1);
     }
-    
-    private int impl_detail_find_and_update_message_list(Message dto)
-    {
-        for(int i = 0; i < messages.size(); i++)
-        {
+
+    public void update(Message data) {
+        int index = findMessageIndex(data);
+        if (index != -1) {
+            messages.set(index, data);
+            notifyItemChanged(index);
+        }
+    }
+
+    private int findMessageIndex(Message data) {
+        for (int i = 0; i < messages.size(); i++) {
             Message msg = messages.get(i);
-            if(msg.getNotificationId().equals(dto.getNotificationId()))
-            {
-                msg.setContent( dto.getContent() );
+            if (data.getNotificationId().equals(msg.getNotificationId())) {
                 return i;
             }
         }
-
         return -1;
     }
-    
-    private boolean isMessageSentByRecipient(Message msg)
-    {
+
+    private boolean isMessageSentByRecipient(Message msg) {
         return msg.isOwner();
-    };
-    
+    }
 }

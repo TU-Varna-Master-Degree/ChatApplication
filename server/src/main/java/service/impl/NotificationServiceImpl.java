@@ -1,5 +1,7 @@
 package service.impl;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import dao.GroupDao;
 import dao.MessageDao;
 import dao.UserDao;
@@ -20,7 +22,9 @@ import org.apache.logging.log4j.Logger;
 import service.NotificationService;
 import service.SessionService;
 
+import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
+import java.net.URLConnection;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,19 +59,10 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         List<MessageDto> messages = messageDao.getGroupMessages(userId, groupId);
-        messages.stream()
-            .filter(m -> m.getMessageType().equals(MessageType.FILE))
-            .forEach(m -> {
-                try {
-                    m.setFile(Files.readAllBytes(Paths.get(m.getFilePath())));
-                } catch (IOException ex) {
-                    m.setFile("Problem appeared while reading a file!".getBytes());
-                }
-            });
-
         List<GroupUserDto> users = groupDao.getParticipantsInGroup(groupId);
 
         NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setUserId(userId);
         notificationDto.setMessages(messages);
         notificationDto.setUsers(users);
 
@@ -88,10 +83,15 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         Notification notification = new Notification();
+        notification.setMessageType(sendMessageDto.getMessageType());
+        notification.setSendDate(LocalDateTime.now());
+        notification.setGroup(group);
+
         if (sendMessageDto.getMessageType().equals(MessageType.FILE)) {
             String filePath;
             try {
                 filePath = saveFile(sendMessageDto.getFile(), sendMessageDto.getFileType());
+                checkForImage(notification, sendMessageDto.getFile());
             } catch (IOException e) {
                 return new ServerResponse(StatusCode.FAILED, "Problem appeared while creating the file.");
             }
@@ -107,14 +107,12 @@ public class NotificationServiceImpl implements NotificationService {
             notification.setContent(sendMessageDto.getContent());
         }
 
-        notification.setMessageType(sendMessageDto.getMessageType());
-        notification.setSendDate(LocalDateTime.now());
-        notification.setGroup(group);
         notification.setSender(userDao.getById(userId));
         messageDao.saveNotification(notification);
 
         MessageDto messageDto = createMessageDto(notification);
-        saveFileToDto(sendMessageDto, notification, messageDto);
+        messageDto.setOwner(userId.equals(notification.getSender().getId()));
+        saveFileToDto(notification, messageDto);
 
         ServerResponse<MessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
         serverResponse.setOperationType(OperationType.CREATE_NOTIFICATION);
@@ -135,11 +133,14 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         String oldFilePath = null;
+        MessageType messageType = sendMessageDto.getMessageType();
+        notification.setMessageType(messageType);
 
-        if (sendMessageDto.getMessageType().equals(MessageType.FILE)) {
+        if (messageType.equals(MessageType.FILE) || messageType.equals(MessageType.IMAGE)) {
             String filePath;
             try {
                 filePath = saveFile(sendMessageDto.getFile(), sendMessageDto.getFileType());
+                checkForImage(notification, sendMessageDto.getFile());
             } catch (IOException e) {
                 return new ServerResponse(StatusCode.FAILED, "Problem appeared while creating the file.");
             }
@@ -166,7 +167,6 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        notification.setMessageType(sendMessageDto.getMessageType());
         messageDao.saveNotification(notification);
 
         if (oldFilePath != null) {
@@ -178,7 +178,8 @@ public class NotificationServiceImpl implements NotificationService {
         }
 
         MessageDto messageDto = createMessageDto(notification);
-        saveFileToDto(sendMessageDto, notification, messageDto);
+        messageDto.setOwner(userId.equals(notification.getSender().getId()));
+        saveFileToDto(notification, messageDto);
 
         ServerResponse<MessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
         serverResponse.setOperationType(OperationType.EDIT_NOTIFICATION);
@@ -186,6 +187,41 @@ public class NotificationServiceImpl implements NotificationService {
 
         sendNotificationsToGroup(notification.getGroup().getUserGroups(), serverResponse);
         return new ServerResponse(StatusCode.EMPTY);
+    }
+
+    public ServerResponse getMessage(Long userId, Long notificationId) {
+        Notification notification = messageDao.getNotificationById(notificationId);
+        if (notification == null) {
+            return new ServerResponse(StatusCode.FAILED, "The message wasn't found!");
+        }
+
+        MessageDto messageDto = createMessageDto(notification);
+        messageDto.setOwner(userId.equals(notification.getSender().getId()));
+        MessageType messageType = messageDto.getMessageType();
+        if (messageType.equals(MessageType.FILE) || messageType.equals(MessageType.IMAGE)) {
+            saveFileToDto(notification, messageDto);
+            try {
+                messageDto.setFile(Files.readAllBytes(Paths.get(notification.getFile().getFilePath())));
+            } catch (IOException ex) {
+                logger.error("Error appeared while parsing file.");
+            }
+        }
+
+        ServerResponse<MessageDto> serverResponse = new ServerResponse<>(StatusCode.SUCCESSFUL);
+        serverResponse.setData(messageDto);
+        return serverResponse;
+    }
+
+    private void checkForImage(Notification notification, byte[] file) {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(file)) {
+            String contentType = URLConnection.guessContentTypeFromStream(bis);
+
+            if ("image".equals(contentType.split("/")[0])) {
+                notification.setMessageType(MessageType.IMAGE);
+            }
+        } catch (IOException e) {
+            logger.error("Error appeared while checking file content type");
+        }
     }
 
     private String saveFile(byte[] file, String fileType) throws IOException {
@@ -219,11 +255,11 @@ public class NotificationServiceImpl implements NotificationService {
         return messageDto;
     }
 
-    private void saveFileToDto(SendMessageDto sendMessageDto, Notification notification, MessageDto messageDto) {
-        if (notification.getMessageType().equals(MessageType.FILE)) {
+    private void saveFileToDto(Notification notification, MessageDto messageDto) {
+        MessageType messageType = notification.getMessageType();
+        if (messageType.equals(MessageType.FILE) || messageType.equals(MessageType.IMAGE)) {
             messageDto.setFileType(notification.getFile().getFileType());
             messageDto.setFileName(notification.getFile().getFileName());
-            messageDto.setFile(sendMessageDto.getFile());
         }
     }
 

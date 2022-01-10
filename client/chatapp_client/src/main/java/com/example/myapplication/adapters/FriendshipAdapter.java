@@ -48,21 +48,21 @@ public class FriendshipAdapter extends RecyclerView.Adapter<FriendshipViewHolder
         if (FriendshipState.ACCEPTED.equals(friendship.getState())) {
             holder.itemView.setOnClickListener((v) -> showMessages.accept(friendship.getGroupId()));
         } else {
-            holder.showButtons((newState)-> {
-                ServerRequest<UpdateFriendship> request = new ServerRequest<>(OperationType.UPDATE_FRIENDSHIP);
-                {
-                    UpdateFriendship updateFriendship = new UpdateFriendship();
-                    updateFriendship.setReceiverId(friendship.getSenderId());
-                    updateFriendship.setFriendshipState(newState);
-                    request.setData(updateFriendship);
-                }
-                client.sendRequest(request);
-            });
+            holder.showButtons(newState -> sendUpdateStatusRequest(newState, friendship.getSenderId()));
         }
     }
 
     @Override
     public int getItemCount() {
         return data.size();
+    }
+
+    private void sendUpdateStatusRequest(FriendshipState newState, Long userId) {
+        ServerRequest<UpdateFriendship> request = new ServerRequest<>(OperationType.UPDATE_FRIENDSHIP);
+        UpdateFriendship updateFriendship = new UpdateFriendship();
+        updateFriendship.setReceiverId(userId);
+        updateFriendship.setFriendshipState(newState);
+        request.setData(updateFriendship);
+        client.sendRequest(request);
     }
 }

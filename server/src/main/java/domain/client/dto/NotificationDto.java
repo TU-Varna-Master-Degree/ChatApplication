@@ -4,9 +4,19 @@ import java.util.List;
 
 public class NotificationDto {
 
+    private Long userId;
+
     private List<MessageDto> messages;
 
     private List<GroupUserDto> users;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public List<MessageDto> getMessages() {
         return messages;

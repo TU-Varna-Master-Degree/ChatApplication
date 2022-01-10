@@ -39,13 +39,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         FindFriend user = data.get(position);
-
         holder.setUsername(user.getUsername());
-        holder.setOnAddFriend((view) -> {
-            ServerRequest<Long> request = new ServerRequest<>(OperationType.CREATE_FRIENDSHIP);
-            request.setData(user.getId());
-            client.sendRequest(request);
-        });
+        holder.setOnAddFriend(view -> sendAddFriendRequest(user.getId()));
     }
 
     @Override
@@ -63,5 +58,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserViewHolder> {
             data.remove(position);
             notifyItemRemoved(position);
         }
+    }
+
+    private void sendAddFriendRequest(Long userId) {
+        ServerRequest<Long> request = new ServerRequest<>(OperationType.CREATE_FRIENDSHIP);
+        request.setData(userId);
+        client.sendRequest(request);
     }
 }

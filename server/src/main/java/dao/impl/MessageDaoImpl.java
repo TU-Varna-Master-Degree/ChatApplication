@@ -25,7 +25,6 @@ public class MessageDaoImpl implements MessageDao {
                 "    n.content, " +
                 "    n.messageType, " +
                 "    n.sendDate, " +
-                "    f.filePath," +
                 "    f.fileName," +
                 "    f.fileType," +
                 "    n.sender.id," +
