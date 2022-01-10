@@ -1,7 +1,5 @@
 package service.impl;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import dao.GroupDao;
 import dao.MessageDao;
 import dao.UserDao;
@@ -22,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import service.NotificationService;
 import service.SessionService;
 
-import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
 import java.net.URLConnection;
 import java.nio.channels.SocketChannel;
