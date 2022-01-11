@@ -93,7 +93,9 @@ public class LoginActivity extends BaseActivity
 
     @Override
     public void onActivityResult(ActivityResult result) {
-
+        if(result.getResultCode() == RegisterActivity.RESULT_OK) {
+            runOnUiThread(()->Toast.makeText(this, "Successfully registered", Toast.LENGTH_LONG).show());
+        }
     }
 
     private void TryRememberLogin() {
