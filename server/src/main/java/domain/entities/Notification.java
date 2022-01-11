@@ -13,6 +13,7 @@ public class Notification extends Identity {
     @Column(name = "message_type", nullable = false)
     private MessageType messageType;
 
+    @Column(name = "content", length = 1023)
     private String content;
 
     @Column(name = "send_date", nullable = false)

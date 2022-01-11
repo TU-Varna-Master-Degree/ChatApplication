@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(name="chat_files")
 public class ChatFile extends Identity {
 
-    @Column(name = "file_type")
+    @Column(name = "file_type", nullable = false, length = 63)
     private String fileType;
 
     @Column(name = "file_path", nullable = false, length = 511)
